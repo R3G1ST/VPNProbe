@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>VPNProbe</AssemblyName>
+    <RootNamespace>VPNProbe</RootNamespace>
+    <Nullable>enable</Nullable>
+    <Version>1.0.0</Version>
+    <Authors>R3G1ST</Authors>
+    <Product>VPNProbe</Product>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <Resource Include="app.png"/>
+    <Content Include="app.ico" CopyToOutputDirectory="PreserveNewest"/>
+  </ItemGroup>
+
+</Project>
