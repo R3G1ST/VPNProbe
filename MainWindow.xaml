@@ -1,0 +1,251 @@
+<Window x:Class="VPNProbe.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="VPNProbe v1.0" Height="600" Width="960" MinHeight="500" MinWidth="800"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        ResizeMode="CanResizeWithGrip">
+
+    <Border Background="{StaticResource BgDark}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="36"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Custom Title Bar -->
+            <Border Grid.Row="0" Background="#060610" CornerRadius="8,8,0,0" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+                <Grid>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,0,0">
+                        <Border Background="{StaticResource Accent}" CornerRadius="4" Width="8" Height="8" Margin="0,0,8,0"/>
+                        <TextBlock Text="VPNProbe v1.0" Foreground="{StaticResource TextSecondary}" FontSize="11" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <Button x:Name="BtnMinimize" Content="—" Width="36" Height="28" Click="BtnMinimize_Click"
+                                Background="Transparent" Foreground="{StaticResource TextSecondary}" BorderThickness="0" FontSize="12" Cursor="Hand"/>
+                        <Button x:Name="BtnMaximize" Content="☐" Width="36" Height="28" Click="BtnMaximize_Click"
+                                Background="Transparent" Foreground="{StaticResource TextSecondary}" BorderThickness="0" FontSize="12" Cursor="Hand"/>
+                        <Button x:Name="BtnClose" Content="✕" Width="36" Height="28" Click="BtnClose_Click"
+                                Background="Transparent" Foreground="{StaticResource Red}" BorderThickness="0" FontSize="12" Cursor="Hand"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Header + Tabs -->
+            <Border Grid.Row="1" Style="{StaticResource CardBorder}" Margin="12,6,12,6">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0">
+                        <TextBlock Text="VPNProbe" FontSize="20" FontWeight="Bold" Foreground="{StaticResource Accent}"/>
+                        <TextBlock Text="Проверка подписок и VPN протоколов" Foreground="{StaticResource TextSecondary}" FontSize="11" Margin="0,2,0,0"/>
+                    </StackPanel>
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <Border x:Name="StatusDot" Background="{StaticResource Accent}" CornerRadius="4" Width="8" Height="8" Margin="0,0,8,0" VerticalAlignment="Center">
+                            <Border.Triggers>
+                                <EventTrigger RoutedEvent="Loaded">
+                                    <BeginStoryboard>
+                                        <Storyboard RepeatBehavior="Forever">
+                                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                             From="1" To="0.3" Duration="0:0:1"
+                                                             AutoReverse="True"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </Border.Triggers>
+                        </Border>
+                        <TextBlock x:Name="StatusText" Text="Готов" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                        <Button Content="▶ Запуск" Style="{StaticResource AccentButton}" x:Name="BtnStart" Click="BtnStart_Click"/>
+                    </StackPanel>
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,8,0,0">
+                        <Border x:Name="TabServersBg" Background="{StaticResource BgCard}" CornerRadius="6,6,0,0"
+                                Padding="16,6" Cursor="Hand" MouseLeftButtonDown="TabServers_Click"
+                                BorderBrush="{StaticResource BorderBrush}" BorderThickness="1,1,1,0">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="📡" FontSize="16" Margin="0,0,6,0" VerticalAlignment="Center" Foreground="{StaticResource Accent}" FontFamily="Segoe UI Emoji"/>
+                                <TextBlock x:Name="TabServersText" Text="Серверы" Foreground="{StaticResource Accent}" FontWeight="Bold" FontSize="12" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                        <Border x:Name="TabAuditBg" Background="{StaticResource BgHover}" CornerRadius="6,6,0,0"
+                                Padding="16,6" Cursor="Hand" MouseLeftButtonDown="TabAudit_Click"
+                                BorderBrush="{StaticResource BorderBrush}" BorderThickness="1,1,1,0" Margin="4,0,0,0">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="🔍" FontSize="16" Margin="0,0,6,0" VerticalAlignment="Center" Foreground="{StaticResource Accent}" FontFamily="Segoe UI Emoji"/>
+                                <TextBlock x:Name="TabAuditText" Text="Аудит провайдера" Foreground="{StaticResource TextSecondary}" FontSize="12" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Content -->
+            <Grid Grid.Row="2" Margin="12,0,12,0">
+                <Grid x:Name="ServersPanel" Visibility="Visible">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Input -->
+                    <Border Grid.Row="0" Style="{StaticResource CardBorder}" Margin="0,0,0,6">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Row="0" Text="Ссылка на подписку или URI (по одному на строку):" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,6"/>
+                            <Border Grid.Row="1" Background="{StaticResource BgInput}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="6" Padding="2">
+                                <TextBox x:Name="InputUrl" Background="Transparent" BorderThickness="0"
+                                         AcceptsReturn="False" AcceptsTab="False" TextWrapping="NoWrap"
+                                         VerticalContentAlignment="Center" FontFamily="{StaticResource MonoFont}"
+                                         FontSize="13" Foreground="{StaticResource TextPrimary}"
+                                         CaretBrush="{StaticResource Accent}" SelectionBrush="{StaticResource Accent}"
+                                          Text=""/>
+                            </Border>
+
+                            <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0,0,0">
+                                <Button Content="📋" Click="BtnChooseLink_Click" ToolTip="Выбрать сохранённую ссылку"
+                                        Background="Transparent" Foreground="{StaticResource Accent}" BorderThickness="0"
+                                        FontSize="14" Cursor="Hand" Padding="4,2"/>
+                                <Button Content="💾" Click="BtnSaveLink_Click" ToolTip="Сохранить ссылку"
+                                        Background="Transparent" Foreground="{StaticResource Yellow}" BorderThickness="0"
+                                        FontSize="14" Cursor="Hand" Padding="4,2" Margin="4,0,0,0"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,8,0,0">
+                                <CheckBox x:Name="ChkPing" Content="Ping" IsChecked="True" Foreground="{StaticResource TextPrimary}" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                <CheckBox x:Name="ChkPortTls" Content="Port/TLS" IsChecked="True" Foreground="{StaticResource TextPrimary}" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                <CheckBox x:Name="ChkProxy" Content="Proxy" IsChecked="True" Foreground="{StaticResource TextPrimary}" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                <CheckBox x:Name="ChkDpi" Content="DPI" IsChecked="False" Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Results -->
+                    <DataGrid Grid.Row="1" x:Name="ResultsGrid" AutoGenerateColumns="False" MouseRightButtonUp="ResultsGrid_MouseRightButtonUp"
+                             RowHeight="24" FontSize="11" HeadersVisibility="Column" GridLinesVisibility="None"
+                             BorderThickness="0" Background="Transparent" CanUserResizeColumns="True"
+                             SelectionMode="Single" SelectionUnit="FullRow">
+                        <DataGrid.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Копировать ссылку (URI)" Click="MenuCopyUri_Click"/>
+                                <MenuItem Header="Копировать для Podkop (OpenWrt)" Click="MenuCopyPodkop_Click"/>
+                            </ContextMenu>
+                        </DataGrid.ContextMenu>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Статус" Binding="{Binding Status}" Width="SizeToHeader">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Status}" Value="OK">
+                                                <Setter Property="Foreground" Value="{StaticResource Accent}"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Status}" Value="Offline">
+                                                <Setter Property="Foreground" Value="{StaticResource Red}"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Status}" Value="Port blocked">
+                                                <Setter Property="Foreground" Value="{StaticResource Yellow}"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Status}" Value="DPI blocked">
+                                                <Setter Property="Foreground" Value="{StaticResource Orange}"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Status}" Value="No ping">
+                                                <Setter Property="Foreground" Value="{StaticResource Red}"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Status}" Value="TLS fail">
+                                                <Setter Property="Foreground" Value="{StaticResource Yellow}"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Status}" Value="Fail">
+                                                <Setter Property="Foreground" Value="{StaticResource Red}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="Протокол" Binding="{Binding Server.ProtocolName}" Width="SizeToHeader"/>
+                            <DataGridTextColumn Header="Имя" Binding="{Binding Server.Name}" Width="200"/>
+                            <DataGridTextColumn Header="Сервер" Binding="{Binding Server.Host}" Width="SizeToHeader"/>
+                            <DataGridTextColumn Header="Порт" Binding="{Binding Server.Port}" Width="SizeToHeader"/>
+                            <DataGridTextColumn Header="Ping" Binding="{Binding PingDisplay}" Width="SizeToHeader"/>
+                            <DataGridTextColumn Header="Port" Binding="{Binding PortDisplay}" Width="SizeToHeader"/>
+                            <DataGridTextColumn Header="TLS" Binding="{Binding TlsDisplay}" Width="SizeToHeader"/>
+                            <DataGridTextColumn Header="Прокси" Binding="{Binding ProxyDisplay}" Width="SizeToHeader"/>
+                            <DataGridTextColumn Header="IP" Binding="{Binding ProxyIp}" Width="SizeToHeader"/>
+                            <DataGridTextColumn Header="Ошибка" Binding="{Binding Error}" Width="120"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,8,0,0">
+                        <TextBlock x:Name="SummaryText" Text="Серверов: 0" Foreground="{StaticResource TextSecondary}" FontSize="11"/>
+                        <TextBlock Text=" | " Foreground="{StaticResource BorderBrush}" Margin="4,0"/>
+                        <TextBlock x:Name="OkCount" Text="OK: 0" Foreground="{StaticResource Accent}" FontSize="11"/>
+                        <TextBlock Text=" | " Foreground="{StaticResource BorderBrush}" Margin="4,0"/>
+                        <TextBlock x:Name="FailCount" Text="Fail: 0" Foreground="{StaticResource Red}" FontSize="11"/>
+                    </StackPanel>
+                </Grid>
+
+                <Grid x:Name="AuditPanel" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0" Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Полный аудит провайдера" Foreground="{StaticResource Accent}" FontWeight="Bold" FontSize="14" VerticalAlignment="Center"/>
+                        <Button x:Name="BtnCopyLog" Grid.Column="1" Content="📋 Копировать лог" Style="{StaticResource AccentButton}"
+                                Click="BtnCopyLog_Click" Margin="0,0,8,0" Background="{StaticResource BgHover}"
+                                Foreground="{StaticResource TextPrimary}" FontSize="11" Padding="12,6" IsEnabled="False"/>
+                        <Button x:Name="BtnStartAudit" Grid.Column="2" Content="▶ Начать аудит" Style="{StaticResource AccentButton}"
+                                Click="BtnStartAudit_Click"/>
+                    </Grid>
+
+                    <TextBlock x:Name="AuditStatus" Grid.Row="1" Text="" Foreground="{StaticResource TextSecondary}"
+                               FontSize="11" Margin="0,0,0,8" Visibility="Collapsed"/>
+
+                    <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                        <StackPanel x:Name="AuditResults">
+                            <Border Background="{StaticResource BgInput}" CornerRadius="8" Padding="20" Margin="0,20,0,0">
+                                <StackPanel HorizontalAlignment="Center">
+                                    <TextBlock Text="🔍" FontSize="32" HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                                    <TextBlock Text="Нажмите «Начать аудит» для проверки" Foreground="{StaticResource TextSecondary}"
+                                               HorizontalAlignment="Center" FontSize="13"/>
+                                    <TextBlock Text="Проверка: IP, DPI, Скорость, Bufferbloat, DNS, Гео-блокировка"
+                                               Foreground="{StaticResource TextSecondary}" FontSize="11" Margin="0,4,0,0"
+                                               HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </Grid>
+
+            <!-- Progress -->
+            <Grid Grid.Row="3" Margin="16,0,16,12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <ProgressBar x:Name="ProgressBar" Grid.Row="0" Value="0" Maximum="100" Height="3"/>
+                <TextBlock x:Name="ProgressText" Grid.Row="1" Text="" HorizontalAlignment="Center"
+                           FontSize="11" Foreground="{StaticResource TextSecondary}" Margin="0,4,0,0"/>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

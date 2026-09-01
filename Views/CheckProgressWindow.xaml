@@ -1,0 +1,104 @@
+<Window x:Class="VPNProbe.Views.CheckProgressWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Проверка серверов" Height="520" Width="700"
+        WindowStartupLocation="CenterOwner" WindowStyle="None" AllowsTransparency="True"
+        Background="Transparent" ResizeMode="NoResize" Closing="Window_Closing">
+
+    <Border Background="{StaticResource BgDark}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="36"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Title Bar -->
+            <Border Grid.Row="0" Background="#060610" CornerRadius="8,8,0,0" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+                <Grid>
+                    <TextBlock x:Name="TitleText" Text="Проверка серверов..." Foreground="{StaticResource TextSecondary}"
+                               FontSize="11" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                    <Button Content="✕" Width="36" Height="28" Click="BtnClose_Click"
+                            HorizontalAlignment="Right" Background="Transparent" Foreground="{StaticResource Red}"
+                            BorderThickness="0" FontSize="12" Cursor="Hand"/>
+                </Grid>
+            </Border>
+
+            <!-- Progress -->
+            <Border Grid.Row="1" Style="{StaticResource CardBorder}" Margin="12,8,12,6" Padding="10">
+                <StackPanel>
+                    <Grid Margin="0,0,0,6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock x:Name="StatusText" Grid.Column="0" Text="Подготовка..."
+                                   Foreground="{StaticResource TextSecondary}" FontSize="11" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="OkCount" Grid.Column="1" Text="OK: 0" Foreground="{StaticResource Accent}"
+                                   FontSize="11" Margin="12,0,0,0" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="FailCount" Grid.Column="2" Text="Fail: 0" Foreground="{StaticResource Red}"
+                                   FontSize="11" Margin="12,0,0,0" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="TotalCount" Grid.Column="3" Text="0/0" Foreground="{StaticResource TextSecondary}"
+                                   FontSize="11" Margin="12,0,0,0" VerticalAlignment="Center"/>
+                    </Grid>
+                    <ProgressBar x:Name="ProgressBar" Value="0" Maximum="100" Height="3"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Server List -->
+            <Border Grid.Row="2" Style="{StaticResource CardBorder}" Margin="12,0,12,6" Padding="0">
+                <DataGrid x:Name="ServerGrid" AutoGenerateColumns="False" HeadersVisibility="Column"
+                          GridLinesVisibility="None" BorderThickness="0" Background="Transparent"
+                          RowHeight="26" FontSize="11" CanUserResizeColumns="True"
+                          SelectionMode="Single" SelectionUnit="FullRow">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="" Binding="{Binding StatusIcon}" Width="24"/>
+                        <DataGridTextColumn Header="Имя" Binding="{Binding Name}" Width="200"/>
+                        <DataGridTextColumn Header="Пинг" Binding="{Binding PingText}" Width="60"/>
+                        <DataGridTextColumn Header="Порт" Binding="{Binding PortText}" Width="50"/>
+                        <DataGridTextColumn Header="TLS" Binding="{Binding TlsText}" Width="50"/>
+                        <DataGridTextColumn Header="Прокси" Binding="{Binding ProxyText}" Width="55"/>
+                        <DataGridTextColumn Header="IP" Binding="{Binding ProxyIp}" Width="120"/>
+                        <DataGridTextColumn Header="Ошибка" Binding="{Binding Error}" Width="*"/>
+                    </DataGrid.Columns>
+                    <DataGrid.ColumnHeaderStyle>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+                            <Setter Property="FontWeight" Value="Normal"/>
+                            <Setter Property="FontSize" Value="10"/>
+                            <Setter Property="Padding" Value="8,4"/>
+                            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+                        </Style>
+                    </DataGrid.ColumnHeaderStyle>
+                </DataGrid>
+            </Border>
+
+            <!-- Buttons -->
+            <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="12,0,12,6">
+                <Button x:Name="BtnStop" Content="⏹ Стоп" Click="BtnStop_Click"
+                        Background="{StaticResource Red}" Foreground="White" FontSize="11"
+                        Padding="14,5" BorderThickness="0" Cursor="Hand" FontWeight="Bold"
+                        FontFamily="{StaticResource MonoFont}"/>
+                <Button x:Name="BtnDone" Content="✓ Готово" Click="BtnDone_Click" Visibility="Collapsed"
+                        Background="{StaticResource Accent}" Foreground="Black" FontSize="11"
+                        Padding="14,5" BorderThickness="0" Cursor="Hand" FontWeight="Bold"
+                        FontFamily="{StaticResource MonoFont}" Margin="8,0,0,0"/>
+            </StackPanel>
+
+            <!-- Summary (hidden) -->
+            <Border x:Name="SummaryBorder" Grid.Row="4" Style="{StaticResource CardBorder}"
+                    Margin="12,0,12,8" Padding="10" Visibility="Collapsed">
+                <StackPanel>
+                    <TextBlock x:Name="SummaryText" Text="" Foreground="{StaticResource Accent}"
+                               FontSize="13" FontWeight="Bold" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+</Window>
