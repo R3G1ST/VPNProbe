@@ -258,21 +258,29 @@ public static class DeepCheckService
 
             var sw = Stopwatch.StartNew();
             var totalBytes = 0L;
-            var testUrl = "http://speedtest.tele2.net/1MB.zip";
+            var testUrls = new[] {
+                "http://speedtest.tele2.net/1MB.zip",
+                "http://proof.ovh.net/files/1Mb.dat",
+                "http://speedtest.ftp.otenet.gr/files/test1Mb.db"
+            };
 
-            try
+            foreach (var testUrl in testUrls)
             {
-                var response = await proxyClient.GetAsync(testUrl, HttpCompletionOption.ResponseHeadersRead, ct);
-                var stream = await response.Content.ReadAsStreamAsync(ct);
-                var buffer = new byte[8192];
-                int read;
-                while ((read = await stream.ReadAsync(buffer, ct)) > 0)
+                try
                 {
-                    totalBytes += read;
-                    if (sw.Elapsed.TotalSeconds > 15) break;
+                    var response = await proxyClient.GetAsync(testUrl, HttpCompletionOption.ResponseHeadersRead, ct);
+                    var stream = await response.Content.ReadAsStreamAsync(ct);
+                    var buffer = new byte[8192];
+                    int read;
+                    while ((read = await stream.ReadAsync(buffer, ct)) > 0)
+                    {
+                        totalBytes += read;
+                        if (sw.Elapsed.TotalSeconds > 10) break;
+                    }
+                    if (totalBytes > 0) break;
                 }
+                catch { }
             }
-            catch { }
 
             sw.Stop();
 
@@ -298,13 +306,18 @@ public static class DeepCheckService
     {
         if (!r.TrafficOk) return;
 
+        var httpPort = GetFreePort();
+        var socksPort = GetFreePort();
+        Process? process = null;
+        string configPath = "";
+
         try
         {
-            var configPath = Path.Combine(Path.GetTempPath(), $"vpnprobe_stab_{Guid.NewGuid():N}.json");
-            var config = ProxyChecker.GenerateConfig(server);
+            configPath = Path.Combine(Path.GetTempPath(), $"vpnprobe_stab_{Guid.NewGuid():N}.json");
+            var config = ProxyChecker.GenerateConfigOnPorts(server, socksPort, httpPort);
             await File.WriteAllTextAsync(configPath, config, ct);
 
-            using var process = new Process();
+            process = new Process();
             process.StartInfo = new ProcessStartInfo
             {
                 FileName = ProxyChecker.SingBoxPath,
@@ -317,16 +330,22 @@ public static class DeepCheckService
             process.Start();
             await Task.Delay(2000, ct);
 
+            using var proxyClient = new HttpClient(new HttpClientHandler
+            {
+                Proxy = new WebProxy($"http://127.0.0.1:{httpPort}"),
+                ServerCertificateCustomValidationCallback = (_, _, _, _) => true
+            }) { Timeout = TimeSpan.FromSeconds(5) };
+
             var totalRequests = 0;
             var successRequests = 0;
             var testUrl = "http://cp.cloudflare.com/";
             var sw = Stopwatch.StartNew();
 
-            while (sw.Elapsed.TotalSeconds < 10)
+            while (sw.Elapsed.TotalSeconds < 8)
             {
                 try
                 {
-                    var resp = await Http.GetAsync(testUrl, ct);
+                    var resp = await proxyClient.GetAsync(testUrl, ct);
                     totalRequests++;
                     if (resp.IsSuccessStatusCode) successRequests++;
                 }
@@ -337,9 +356,6 @@ public static class DeepCheckService
                 await Task.Delay(500, ct);
             }
 
-            try { process.Kill(); } catch { }
-            try { File.Delete(configPath); } catch { }
-
             r.StabilityRequests = totalRequests;
             r.StabilitySuccess = successRequests;
             r.PacketLossPct = totalRequests > 0 ? (double)(totalRequests - successRequests) / totalRequests * 100 : 100;
@@ -347,6 +363,11 @@ public static class DeepCheckService
         catch (Exception ex)
         {
             r.StabilityError = ex.Message;
+        }
+        finally
+        {
+            try { process?.Kill(); } catch { }
+            try { if (!string.IsNullOrEmpty(configPath)) File.Delete(configPath); } catch { }
         }
     }
 
