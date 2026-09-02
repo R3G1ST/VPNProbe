@@ -113,6 +113,7 @@ public partial class CheckProgressWindow : Window
                     {
                         var deep = await DeepCheckService.RunAllChecks(server, serverCts.Token);
                         display.DeepResult = deep;
+                        display.FormattedName = DeepCheckService.FormatServerName(deep);
                         TryInvoke(() =>
                         {
                             row.SpeedText = deep.SpeedMbps > 0 ? $"{deep.SpeedMbps:F1}Mbps" : "—";
@@ -153,7 +154,7 @@ public partial class CheckProgressWindow : Window
                     : eta.TotalMinutes >= 1
                         ? $"{(int)eta.TotalMinutes}мин {eta.Seconds:D2}с"
                         : $"{(int)eta.TotalSeconds}с";
-                StatusText.Text = $"{_done}/{_total} — {server.Name}  |  ETA {etaStr}";
+                StatusText.Text = $"{_done}/{_total} — {display.FormattedName ?? server.Name}  |  ETA {etaStr}";
             });
         });
 
@@ -201,27 +202,46 @@ public partial class CheckProgressWindow : Window
             {
                 var uri = r.Server.RawUri;
                 var grade = r.DeepResult?.Grade ?? "?";
+                var country = r.DeepResult?.CountryCode ?? "";
+                var city = r.DeepResult?.City ?? "";
                 var name = r.Server.DisplayName ?? r.Server.Host;
 
-                // Replace or add name with grade prefix
+                var tag = $"[{grade}]";
+                if (!string.IsNullOrEmpty(country))
+                    tag += $" [{country}]";
+                if (!string.IsNullOrEmpty(city))
+                    tag += $" {city}";
+
                 var hashIdx = uri.IndexOf('#');
                 if (hashIdx >= 0)
-                {
-                    // Has name — replace it
-                    return uri.Substring(0, hashIdx + 1) + $"[{grade}] {name}";
-                }
+                    return uri.Substring(0, hashIdx + 1) + $"{tag} {name}";
                 else
-                {
-                    // No name — add one
-                    return uri + $"#[{grade}] {name}";
-                }
+                    return uri + $"#{tag} {name}";
             })
             .ToList();
 
         if (uris.Count == 0) return;
 
+        // Split by protocol
+        var byProtocol = new Dictionary<string, List<string>>();
+        for (int i = 0; i < sorted.Count; i++)
+        {
+            var proto = sorted[i].Server.ProtocolName?.ToLower() ?? "unknown";
+            if (!byProtocol.ContainsKey(proto))
+                byProtocol[proto] = new List<string>();
+            byProtocol[proto].Add(uris[i]);
+        }
+
         var plain = string.Join("\n", uris);
         var base64 = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(plain));
+
+        // Build per-protocol base64
+        var protoBase64 = new Dictionary<string, string>();
+        foreach (var kv in byProtocol)
+        {
+            var protoPlain = string.Join("\n", kv.Value);
+            protoBase64[kv.Key] = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(protoPlain));
+        }
 
         BtnCreateSub.IsEnabled = false;
         BtnCreateSub.Content = "⏳ Публикация...";
@@ -235,11 +255,26 @@ public partial class CheckProgressWindow : Window
                 BtnCreateSub.IsEnabled = true;
                 return;
             }
+
             var url = await GitHubService.CreateOrUpdateSubscription(base64, settings.GitHubToken);
+
+            // Publish per-protocol files
+            var protoLinks = new List<string>();
+            foreach (var kv in protoBase64)
+            {
+                try
+                {
+                    await GitHubService.CreateOrUpdateProtocolSubscription(kv.Key, kv.Value, settings.GitHubToken);
+                    var protoUrl = GitHubService.GetRawUrl($"subscriptions/online/{kv.Key}.txt");
+                    protoLinks.Add($"• [{kv.Key}]({protoUrl}) ({byProtocol[kv.Key].Count})");
+                }
+                catch { }
+            }
 
             var aCount = sorted.Count(r => r.DeepResult?.Grade is "A+" or "A");
             LinkBorder.Visibility = Visibility.Visible;
-            LinkText.Text = $"{url}\n\nОтфильтровано: {uris.Count} серверов (A+: {aCount})\nОтсортировано по скорости и стабильности";
+            var links = string.Join("\n", protoLinks);
+            LinkText.Text = $"{url}\n\nОтфильтровано: {uris.Count} серверов (A+: {aCount})\n\nПо протоколам:\n{links}";
             Clipboard.SetText(url);
             BtnCreateSub.Content = "✓ Опубликовано";
         }

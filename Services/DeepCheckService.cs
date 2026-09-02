@@ -28,6 +28,12 @@ public static class DeepCheckService
     {
         var r = new DeepCheckResult { Server = server };
 
+        // GeoIP lookup
+        var geo = await GeoIpLookupAsync(server.Host);
+        r.Country = geo.Country;
+        r.CountryCode = geo.CountryCode;
+        r.City = geo.City;
+
         // Level 1: Ping
         var ping = await PingChecker.CheckAsync(server, ct);
         r.PingMs = ping.PingMs;
@@ -49,6 +55,48 @@ public static class DeepCheckService
         r.IsFullyWorking = r.TlsValid && r.TrafficOk && r.SpeedMbps > 0 && r.PacketLossPct < 10;
 
         return r;
+    }
+
+    private static readonly Dictionary<string, GeoIpInfo> _geoCache = new();
+
+    public static async Task<GeoIpInfo> GeoIpLookupAsync(string ip)
+    {
+        if (_geoCache.TryGetValue(ip, out var cached))
+            return cached;
+
+        try
+        {
+            var resp = await Http.GetStringAsync($"http://ip-api.com/json/{ip}?fields=status,country,countryCode,city");
+            var doc = JsonDocument.Parse(resp);
+            var root = doc.RootElement;
+            if (root.GetProperty("status").GetString() == "success")
+            {
+                var info = new GeoIpInfo
+                {
+                    Country = root.TryGetProperty("country", out var c) ? c.GetString() ?? "" : "",
+                    CountryCode = root.TryGetProperty("countryCode", out var cc) ? cc.GetString() ?? "" : "",
+                    City = root.TryGetProperty("city", out var city) ? city.GetString() ?? "" : ""
+                };
+                _geoCache[ip] = info;
+                return info;
+            }
+        }
+        catch { }
+        return new GeoIpInfo();
+    }
+
+    public static string FormatServerName(DeepCheckResult r)
+    {
+        var parts = new List<string>();
+        if (!string.IsNullOrEmpty(r.Grade) && r.Grade != "F")
+            parts.Add($"[{r.Grade}]");
+        if (!string.IsNullOrEmpty(r.CountryCode))
+            parts.Add($"[{r.CountryCode}]");
+        if (!string.IsNullOrEmpty(r.City))
+            parts.Add(r.City);
+        parts.Add(r.Server.Name ?? r.Server.Host);
+        parts.Add($"({r.Server.ProtocolName})");
+        return string.Join(" ", parts);
     }
 
     private static async Task CheckTlsDeep(ServerInfo server, DeepCheckResult r, CancellationToken ct)
@@ -313,6 +361,11 @@ public class DeepCheckResult
 {
     public ServerInfo Server { get; set; } = new();
 
+    // GeoIP
+    public string Country { get; set; } = "";
+    public string CountryCode { get; set; } = "";
+    public string City { get; set; } = "";
+
     // Level 2: TLS
     public bool TlsValid { get; set; }
     public string TlsVersion { get; set; } = "";
@@ -348,4 +401,11 @@ public class DeepCheckResult
     // Summary
     public string Grade { get; set; } = "F";
     public bool IsFullyWorking { get; set; }
+}
+
+public class GeoIpInfo
+{
+    public string Country { get; set; } = "";
+    public string CountryCode { get; set; } = "";
+    public string City { get; set; } = "";
 }
