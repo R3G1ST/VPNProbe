@@ -1,0 +1,1 @@
+trojan://wZtezckZp5@extra.xferant-vpn.ru:8443?security=tls&type=tcp&headerType=none&sni=extra.xferant-vpn.ru&fp=chrome#[C] [FI] Helsinki Trojan | Admin ♾ | extra.xferant-vpn.ru:8443
