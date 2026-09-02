@@ -148,9 +148,11 @@ public partial class CheckProgressWindow : Window
                 var eta = remaining > 0 && _done > 0
                     ? TimeSpan.FromTicks(elapsed.Ticks / _done * remaining)
                     : TimeSpan.Zero;
-                var etaStr = eta.TotalMinutes >= 1
-                    ? $"{(int)eta.TotalMinutes}m {eta.Seconds:D2}s"
-                    : $"{(int)eta.TotalSeconds}s";
+                var etaStr = eta.TotalHours >= 1
+                    ? $"{(int)eta.TotalHours}ч {eta.Minutes:D2}мин"
+                    : eta.TotalMinutes >= 1
+                        ? $"{(int)eta.TotalMinutes}мин {eta.Seconds:D2}с"
+                        : $"{(int)eta.TotalSeconds}с";
                 StatusText.Text = $"{_done}/{_total} — {server.Name}  |  ETA {etaStr}";
             });
         });
@@ -193,7 +195,29 @@ public partial class CheckProgressWindow : Window
             .ThenBy(r => r.DeepResult?.PacketLossPct ?? 100)
             .ToList();
 
-        var uris = sorted.Select(r => r.Server.RawUri).Where(u => !string.IsNullOrEmpty(u)).ToList();
+        var uris = sorted
+            .Where(r => !string.IsNullOrEmpty(r.Server.RawUri))
+            .Select(r =>
+            {
+                var uri = r.Server.RawUri;
+                var grade = r.DeepResult?.Grade ?? "?";
+                var name = r.Server.DisplayName ?? r.Server.Host;
+
+                // Replace or add name with grade prefix
+                var hashIdx = uri.IndexOf('#');
+                if (hashIdx >= 0)
+                {
+                    // Has name — replace it
+                    return uri.Substring(0, hashIdx + 1) + $"[{grade}] {name}";
+                }
+                else
+                {
+                    // No name — add one
+                    return uri + $"#[{grade}] {name}";
+                }
+            })
+            .ToList();
+
         if (uris.Count == 0) return;
 
         var plain = string.Join("\n", uris);
