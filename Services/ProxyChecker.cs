@@ -40,11 +40,13 @@ public static class ProxyChecker
             return result;
         }
 
+        var httpPort = GetFreePort();
+        var socksPort = GetFreePort();
         var configPath = Path.Combine(Path.GetTempPath(), $"vpnprobe_{Guid.NewGuid():N}.json");
         Process? process = null;
         try
         {
-            var config = GenerateConfig(server);
+            var config = GenerateConfigOnPorts(server, socksPort, httpPort);
             await File.WriteAllTextAsync(configPath, config, ct);
 
             process = new Process();
@@ -62,12 +64,12 @@ public static class ProxyChecker
             await Task.Delay(2000, ct);
 
             var testUrl = "http://cp.cloudflare.com/";
-            var success = await TestThroughProxy(testUrl, ct);
+            var success = await TestThroughProxy(testUrl, httpPort, ct);
 
             if (success)
             {
                 result.ProxyOk = true;
-                var ip = await GetExternalIpAsync(ct);
+                var ip = await GetExternalIpAsync(httpPort, ct);
                 result.ProxyIp = ip;
             }
         }
@@ -85,11 +87,16 @@ public static class ProxyChecker
         return result;
     }
 
-    private static async Task<bool> TestThroughProxy(string url, CancellationToken ct)
+    private static async Task<bool> TestThroughProxy(string url, int httpPort, CancellationToken ct)
     {
         try
         {
-            using var http = new HttpClient();
+            using var handler = new HttpClientHandler
+            {
+                Proxy = new WebProxy($"http://127.0.0.1:{httpPort}"),
+                ServerCertificateCustomValidationCallback = (_, _, _, _) => true
+            };
+            using var http = new HttpClient(handler);
             http.Timeout = TimeSpan.FromSeconds(8);
             var resp = await http.GetAsync(url, ct);
             return resp.IsSuccessStatusCode;
@@ -97,11 +104,16 @@ public static class ProxyChecker
         catch { return false; }
     }
 
-    private static async Task<string> GetExternalIpAsync(CancellationToken ct)
+    private static async Task<string> GetExternalIpAsync(int httpPort, CancellationToken ct)
     {
         try
         {
-            using var http = new HttpClient();
+            using var handler = new HttpClientHandler
+            {
+                Proxy = new WebProxy($"http://127.0.0.1:{httpPort}"),
+                ServerCertificateCustomValidationCallback = (_, _, _, _) => true
+            };
+            using var http = new HttpClient(handler);
             http.Timeout = TimeSpan.FromSeconds(5);
             return (await http.GetStringAsync("https://api.ipify.org", ct)).Trim();
         }
