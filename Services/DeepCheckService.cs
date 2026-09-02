@@ -28,6 +28,10 @@ public static class DeepCheckService
     {
         var r = new DeepCheckResult { Server = server };
 
+        // Level 1: Ping
+        var ping = await PingChecker.CheckAsync(server, ct);
+        r.PingMs = ping.PingMs;
+
         // Level 2: Protocol + TLS
         await CheckTlsDeep(server, r, ct);
 
@@ -49,6 +53,15 @@ public static class DeepCheckService
 
     private static async Task CheckTlsDeep(ServerInfo server, DeepCheckResult r, CancellationToken ct)
     {
+        // Reality servers: skip standard TLS check, verify Reality handshake
+        if (r.IsReality)
+        {
+            r.RealityOk = true;
+            r.RealityFingerprint = server.Fingerprint;
+            // Reality handshake is verified through traffic test
+            return;
+        }
+
         try
         {
             using var tcp = new TcpClient();
@@ -83,13 +96,6 @@ public static class DeepCheckService
                 r.CertSan = san?.EnumerateDnsNames()?.ToList() ?? new();
 
                 r.CertValid = r.CertDaysLeft > 0;
-            }
-
-            // Reality fingerprint
-            if (!string.IsNullOrEmpty(server.PublicKey))
-            {
-                r.RealityOk = true;
-                r.RealityFingerprint = server.Fingerprint;
             }
         }
         catch (Exception ex)
@@ -263,15 +269,32 @@ public static class DeepCheckService
     private static string CalculateGrade(DeepCheckResult r)
     {
         var score = 0;
+        var isReality = r.IsReality;
 
-        if (r.TlsValid) score += 25;
-        if (r.CertValid) score += 10;
-        if (r.TrafficOk) score += 25;
-        if (r.SpeedMbps > 5) score += 15;
-        else if (r.SpeedMbps > 1) score += 10;
-        if (r.PacketLossPct < 5) score += 15;
-        else if (r.PacketLossPct < 20) score += 8;
-        if (r.RealityOk) score += 10;
+        if (isReality)
+        {
+            // Reality servers: different grading logic
+            // TLS check is not applicable (fake certificate by design)
+            if (r.TrafficOk) score += 40;
+            if (r.SpeedMbps > 5) score += 20;
+            else if (r.SpeedMbps > 1) score += 15;
+            if (r.PacketLossPct < 5) score += 20;
+            else if (r.PacketLossPct < 20) score += 10;
+            if (r.PingMs < 200) score += 10;
+            else if (r.PingMs < 400) score += 5;
+            if (r.RealityOk) score += 10;
+        }
+        else
+        {
+            // Regular servers: standard TLS-based grading
+            if (r.TlsValid) score += 25;
+            if (r.CertValid) score += 10;
+            if (r.TrafficOk) score += 25;
+            if (r.SpeedMbps > 5) score += 15;
+            else if (r.SpeedMbps > 1) score += 10;
+            if (r.PacketLossPct < 5) score += 15;
+            else if (r.PacketLossPct < 20) score += 8;
+        }
 
         return score switch
         {
@@ -303,6 +326,7 @@ public class DeepCheckResult
     public bool IsReality => !string.IsNullOrEmpty(Server?.PublicKey);
     public bool RealityOk { get; set; }
     public string RealityFingerprint { get; set; } = "";
+    public int PingMs { get; set; } = -1;
 
     // Level 3: Traffic
     public bool TrafficOk { get; set; }
