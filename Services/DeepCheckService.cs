@@ -156,13 +156,18 @@ public static class DeepCheckService
     {
         if (!r.TlsValid && !r.IsReality) return;
 
+        var httpPort = GetFreePort();
+        var socksPort = GetFreePort();
+        Process? process = null;
+        string configPath = "";
+
         try
         {
-            var configPath = Path.Combine(Path.GetTempPath(), $"vpnprobe_deep_{Guid.NewGuid():N}.json");
-            var config = ProxyChecker.GenerateConfig(server);
+            configPath = Path.Combine(Path.GetTempPath(), $"vpnprobe_deep_{Guid.NewGuid():N}.json");
+            var config = ProxyChecker.GenerateConfigOnPorts(server, socksPort, httpPort);
             await File.WriteAllTextAsync(configPath, config, ct);
 
-            using var process = new Process();
+            process = new Process();
             process.StartInfo = new ProcessStartInfo
             {
                 FileName = ProxyChecker.SingBoxPath,
@@ -175,12 +180,18 @@ public static class DeepCheckService
             process.Start();
             await Task.Delay(2000, ct);
 
+            using var proxyClient = new HttpClient(new HttpClientHandler
+            {
+                Proxy = new WebProxy($"http://127.0.0.1:{httpPort}"),
+                ServerCertificateCustomValidationCallback = (_, _, _, _) => true
+            }) { Timeout = TimeSpan.FromSeconds(10) };
+
             var testUrls = new[] { "http://cp.cloudflare.com/", "http://ifconfig.me/ip", "http://api.ipify.org" };
             foreach (var url in testUrls)
             {
                 try
                 {
-                    var ip = await Http.GetStringAsync(url, ct);
+                    var ip = await proxyClient.GetStringAsync(url, ct);
                     if (!string.IsNullOrWhiteSpace(ip))
                     {
                         r.TrafficOk = true;
@@ -190,27 +201,43 @@ public static class DeepCheckService
                 }
                 catch { }
             }
-
-            try { process.Kill(); } catch { }
-            try { File.Delete(configPath); } catch { }
         }
         catch (Exception ex)
         {
             r.TrafficError = ex.Message;
         }
+        finally
+        {
+            try { process?.Kill(); } catch { }
+            try { if (!string.IsNullOrEmpty(configPath)) File.Delete(configPath); } catch { }
+        }
+    }
+
+    private static int GetFreePort()
+    {
+        using var l = new TcpListener(IPAddress.Loopback, 0);
+        l.Start();
+        var port = ((IPEndPoint)l.LocalEndpoint).Port;
+        l.Stop();
+        return port;
     }
 
     private static async Task CheckSpeed(ServerInfo server, DeepCheckResult r, CancellationToken ct)
     {
         if (!r.TrafficOk) return;
 
+        var httpPort = GetFreePort();
+        var socksPort = GetFreePort();
+        Process? process = null;
+        string configPath = "";
+
         try
         {
-            var configPath = Path.Combine(Path.GetTempPath(), $"vpnprobe_speed_{Guid.NewGuid():N}.json");
-            var config = ProxyChecker.GenerateConfig(server);
+            configPath = Path.Combine(Path.GetTempPath(), $"vpnprobe_speed_{Guid.NewGuid():N}.json");
+            var config = ProxyChecker.GenerateConfigOnPorts(server, socksPort, httpPort);
             await File.WriteAllTextAsync(configPath, config, ct);
 
-            using var process = new Process();
+            process = new Process();
             process.StartInfo = new ProcessStartInfo
             {
                 FileName = ProxyChecker.SingBoxPath,
@@ -223,13 +250,19 @@ public static class DeepCheckService
             process.Start();
             await Task.Delay(2000, ct);
 
+            using var proxyClient = new HttpClient(new HttpClientHandler
+            {
+                Proxy = new WebProxy($"http://127.0.0.1:{httpPort}"),
+                ServerCertificateCustomValidationCallback = (_, _, _, _) => true
+            }) { Timeout = TimeSpan.FromSeconds(20) };
+
             var sw = Stopwatch.StartNew();
             var totalBytes = 0L;
             var testUrl = "http://speedtest.tele2.net/1MB.zip";
 
             try
             {
-                var response = await Http.GetAsync(testUrl, HttpCompletionOption.ResponseHeadersRead, ct);
+                var response = await proxyClient.GetAsync(testUrl, HttpCompletionOption.ResponseHeadersRead, ct);
                 var stream = await response.Content.ReadAsStreamAsync(ct);
                 var buffer = new byte[8192];
                 int read;
@@ -242,8 +275,6 @@ public static class DeepCheckService
             catch { }
 
             sw.Stop();
-            try { process.Kill(); } catch { }
-            try { File.Delete(configPath); } catch { }
 
             if (sw.Elapsed.TotalSeconds > 0 && totalBytes > 0)
             {
@@ -255,6 +286,11 @@ public static class DeepCheckService
         catch (Exception ex)
         {
             r.SpeedError = ex.Message;
+        }
+        finally
+        {
+            try { process?.Kill(); } catch { }
+            try { if (!string.IsNullOrEmpty(configPath)) File.Delete(configPath); } catch { }
         }
     }
 

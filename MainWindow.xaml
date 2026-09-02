@@ -59,7 +59,19 @@
                             </Border.Triggers>
                         </Border>
                         <TextBlock x:Name="StatusText" Text="Готов" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                        <Button Content="▶ Запуск" Style="{StaticResource AccentButton}" x:Name="BtnStart" Click="BtnStart_Click"/>
+                        <Border Background="{StaticResource BgInput}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="4,2" Margin="0,0,8,0" VerticalAlignment="Center">
+                            <Grid>
+                                <TextBlock x:Name="TokenPlaceholder" Text="GitHub token" Foreground="{StaticResource TextDim}" VerticalAlignment="Center" Visibility="Visible" FontSize="11"/>
+                                <TextBox x:Name="InputToken" Background="Transparent" BorderThickness="0" Width="160"
+                                         VerticalContentAlignment="Center" FontFamily="{StaticResource MonoFont}"
+                                         FontSize="11" Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center"
+                                         TextChanged="InputToken_TextChanged"/>
+                            </Grid>
+                        </Border>
+                        <Button Content="💾" Click="BtnSaveToken_Click" ToolTip="Сохранить токен"
+                                Background="Transparent" Foreground="{StaticResource Yellow}" BorderThickness="0"
+                                FontSize="14" Cursor="Hand" Padding="4,2" VerticalAlignment="Center"/>
+                        <Button Content="▶ Запуск" Style="{StaticResource AccentButton}" x:Name="BtnStart" Click="BtnStart_Click" Margin="8,0,0,0"/>
                     </StackPanel>
                     <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,8,0,0">
                         <Border x:Name="TabServersBg" Background="{StaticResource BgCard}" CornerRadius="6,6,0,0"
