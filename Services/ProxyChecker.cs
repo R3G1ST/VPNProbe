@@ -41,12 +41,11 @@ public static class ProxyChecker
         }
 
         var httpPort = GetFreePort();
-        var socksPort = GetFreePort();
         var configPath = Path.Combine(Path.GetTempPath(), $"vpnprobe_{Guid.NewGuid():N}.json");
         Process? process = null;
         try
         {
-            var config = GenerateConfigOnPorts(server, socksPort, httpPort);
+            var config = GenerateConfigSingleHttp(server, httpPort);
             await File.WriteAllTextAsync(configPath, config, ct);
 
             process = new Process();
@@ -61,7 +60,13 @@ public static class ProxyChecker
             };
             process.Start();
 
-            await Task.Delay(2000, ct);
+            await Task.Delay(3000, ct);
+
+            if (process.HasExited)
+            {
+                result.Error = "sing-box exited early";
+                return result;
+            }
 
             var testUrl = "http://cp.cloudflare.com/";
             var success = await TestThroughProxy(testUrl, httpPort, ct);
@@ -326,6 +331,116 @@ public static class ProxyChecker
             "inbounds": [
                 { "type": "socks", "listen": "127.0.0.1", "listen_port": {{socksPort}} },
                 { "type": "http", "listen": "127.0.0.1", "listen_port": {{httpPort}} }
+            ],
+            "outbounds": [
+                {
+                    "tag": "proxy",
+                    {{outbound.Trim()}}
+                },
+                { "type": "direct", "tag": "direct" },
+                { "type": "block", "tag": "block" }
+            ],
+            "route": {
+                "rules": [],
+                "final": "proxy"
+            }
+        }
+        """;
+    }
+
+    private static string GenerateConfigSingleHttp(ServerInfo server, int httpPort)
+    {
+        var outbound = server.Protocol switch
+        {
+            ProxyProtocol.VlessReality => $$"""
+                "type": "vless",
+                "server": "{{server.Host}}",
+                "server_port": {{server.Port}},
+                "uuid": "{{server.Uuid}}",
+                "flow": "{{server.Flow}}",
+                "tls": {
+                    "enabled": true,
+                    "server_name": "{{server.Sni}}",
+                    "utls": { "enabled": true, "fingerprint": "{{server.Fingerprint}}" },
+                    "reality": {
+                        "enabled": true,
+                        "public_key": "{{server.PublicKey}}",
+                        "short_id": "{{server.ShortId}}"
+                    }
+                }
+            """,
+            ProxyProtocol.VlessWs => $$"""
+                "type": "vless",
+                "server": "{{server.Host}}",
+                "server_port": {{server.Port}},
+                "uuid": "{{server.Uuid}}",
+                "tls": {
+                    "enabled": true,
+                    "server_name": "{{server.Sni}}",
+                    "utls": { "enabled": true, "fingerprint": "{{server.Fingerprint}}" }
+                },
+                "transport": {
+                    "type": "ws",
+                    "path": "{{server.Path}}",
+                    "headers": { "Host": "{{server.HostHeader}}" }
+                }
+            """,
+            ProxyProtocol.VmessWs => $$"""
+                "type": "vmess",
+                "server": "{{server.Host}}",
+                "server_port": {{server.Port}},
+                "uuid": "{{server.Uuid}}",
+                "security": "auto",
+                "tls": {
+                    "enabled": true,
+                    "server_name": "{{server.Sni}}",
+                    "utls": { "enabled": true, "fingerprint": "{{server.Fingerprint}}" }
+                },
+                "transport": {
+                    "type": "ws",
+                    "path": "{{server.Path}}",
+                    "headers": { "Host": "{{server.HostHeader}}" }
+                }
+            """,
+            ProxyProtocol.Trojan => $$"""
+                "type": "trojan",
+                "server": "{{server.Host}}",
+                "server_port": {{server.Port}},
+                "password": "{{server.Password}}",
+                "tls": {
+                    "enabled": true,
+                    "server_name": "{{server.Sni}}",
+                    "utls": { "enabled": true, "fingerprint": "{{server.Fingerprint}}" }
+                }
+            """,
+            ProxyProtocol.Hysteria2 => $$"""
+                "type": "hysteria2",
+                "server": "{{server.Host}}",
+                "server_port": {{server.Port}},
+                "password": "{{server.Password}}",
+                "tls": {
+                    "enabled": true,
+                    "server_name": "{{server.Sni}}",
+                    "insecure": true
+                }
+            """,
+            ProxyProtocol.Shadowsocks => $$"""
+                "type": "shadowsocks",
+                "server": "{{server.Host}}",
+                "server_port": {{server.Port}},
+                "method": "aes-256-gcm",
+                "password": "{{server.Password}}"
+            """,
+            _ => ""
+        };
+
+        if (string.IsNullOrEmpty(outbound)) return "{}";
+
+        return $$"""
+        {
+            "log": { "level": "warn" },
+            "inbounds": [
+                { "type": "mixed", "listen": "127.0.0.1", "listen_port": {{httpPort}} }
             ],
             "outbounds": [
                 {
