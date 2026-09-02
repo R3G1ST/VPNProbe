@@ -13,6 +13,7 @@
         <SolidColorBrush x:Key="AccentDim" Color="#00cc6a"/>
         <SolidColorBrush x:Key="TextPrimary" Color="#e0e0e0"/>
         <SolidColorBrush x:Key="TextSecondary" Color="#888899"/>
+        <SolidColorBrush x:Key="TextDim" Color="#555566"/>
         <SolidColorBrush x:Key="Red" Color="#ff4466"/>
         <SolidColorBrush x:Key="Yellow" Color="#ffcc00"/>
         <SolidColorBrush x:Key="Orange" Color="#ff8844"/>
