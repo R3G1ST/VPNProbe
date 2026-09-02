@@ -22,6 +22,11 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         ResultsGrid.ItemsSource = _results;
+
+        var settings = SettingsService.Load();
+        if (!string.IsNullOrEmpty(settings.GitHubToken))
+            InputToken.Text = settings.GitHubToken;
+
         try
         {
             var icoPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "app.ico");
@@ -51,6 +56,20 @@ public partial class MainWindow : Window
     private void ToggleMaximize()
     {
         WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+    }
+
+    private void InputToken_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (TokenPlaceholder != null && InputToken != null)
+            TokenPlaceholder.Visibility = string.IsNullOrEmpty(InputToken.Text) ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void BtnSaveToken_Click(object sender, RoutedEventArgs e)
+    {
+        var settings = SettingsService.Load();
+        settings.GitHubToken = InputToken.Text.Trim();
+        SettingsService.Save(settings);
+        StatusText.Text = "✓ Токен сохранён";
     }
 
     private void BtnChooseLink_Click(object sender, RoutedEventArgs e)

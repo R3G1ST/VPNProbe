@@ -45,6 +45,6 @@ public static class SettingsService
 
 public class AppSettings
 {
-    public string GitHubToken { get; set; } = "";
+***REMOVED***
     public string DefaultSubscriptionUrl { get; set; } = "";
 }
