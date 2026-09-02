@@ -12,7 +12,7 @@ namespace VPNProbe.Services;
 
 public static class SubscriptionParser
 {
-    private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(15) };
+    private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(60) };
 
     public static async Task<SubscriptionData> FetchAndParse(string url)
     {

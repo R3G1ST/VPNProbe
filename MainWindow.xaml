@@ -1,7 +1,7 @@
 <Window x:Class="VPNProbe.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="VPNProbe v1.0" Height="600" Width="960" MinHeight="500" MinWidth="800"
+        Title="VPNProbe v1.0" Height="650" Width="1060" MinHeight="500" MinWidth="850"
         WindowStartupLocation="CenterScreen"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         ResizeMode="CanResizeWithGrip">
@@ -173,16 +173,16 @@
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
-                            <DataGridTextColumn Header="Протокол" Binding="{Binding Server.ProtocolName}" Width="SizeToHeader"/>
-                            <DataGridTextColumn Header="Имя" Binding="{Binding Server.Name}" Width="200"/>
+                            <DataGridTextColumn Header="Протокол" Binding="{Binding Server.ProtocolName}" Width="70"/>
+                            <DataGridTextColumn Header="Имя" Binding="{Binding Server.Name}" Width="*"/>
                             <DataGridTextColumn Header="Сервер" Binding="{Binding Server.Host}" Width="SizeToHeader"/>
-                            <DataGridTextColumn Header="Порт" Binding="{Binding Server.Port}" Width="SizeToHeader"/>
-                            <DataGridTextColumn Header="Ping" Binding="{Binding PingDisplay}" Width="SizeToHeader"/>
-                            <DataGridTextColumn Header="Port" Binding="{Binding PortDisplay}" Width="SizeToHeader"/>
-                            <DataGridTextColumn Header="TLS" Binding="{Binding TlsDisplay}" Width="SizeToHeader"/>
-                            <DataGridTextColumn Header="Прокси" Binding="{Binding ProxyDisplay}" Width="SizeToHeader"/>
-                            <DataGridTextColumn Header="IP" Binding="{Binding ProxyIp}" Width="SizeToHeader"/>
-                            <DataGridTextColumn Header="Ошибка" Binding="{Binding Error}" Width="120"/>
+                            <DataGridTextColumn Header="Порт" Binding="{Binding Server.Port}" Width="55"/>
+                            <DataGridTextColumn Header="Ping" Binding="{Binding PingDisplay}" Width="60"/>
+                            <DataGridTextColumn Header="Port" Binding="{Binding PortDisplay}" Width="50"/>
+                            <DataGridTextColumn Header="TLS" Binding="{Binding TlsDisplay}" Width="50"/>
+                            <DataGridTextColumn Header="Прокси" Binding="{Binding ProxyDisplay}" Width="60"/>
+                            <DataGridTextColumn Header="IP" Binding="{Binding ProxyIp}" Width="120"/>
+                            <DataGridTextColumn Header="Ошибка" Binding="{Binding Error}" Width="180"/>
                         </DataGrid.Columns>
                     </DataGrid>
 

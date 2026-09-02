@@ -550,6 +550,7 @@ public class CheckResultDisplay : System.ComponentModel.INotifyPropertyChanged
     public string ProxyIp { get; set; } = "";
     public bool DpiBlocked { get; set; }
     public string Error { get; set; } = "";
+    public Services.DeepCheckResult? DeepResult { get; set; }
 
     public string PingDisplay => PingMs >= 0 ? $"{PingMs}ms" : "0ms";
     public string PortDisplay => PortOpen ? "✓" : "✗";

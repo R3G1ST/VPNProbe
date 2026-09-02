@@ -15,7 +15,7 @@ namespace VPNProbe.Services;
 
 public static class ProxyChecker
 {
-    private static readonly string SingBoxPath = FindSingBox();
+    public static readonly string SingBoxPath = FindSingBox();
 
     private static string FindSingBox()
     {
@@ -108,7 +108,7 @@ public static class ProxyChecker
         catch { return "?"; }
     }
 
-    private static string GenerateConfig(ServerInfo server)
+    public static string GenerateConfig(ServerInfo server)
     {
         var localSocksPort = GetFreePort();
         var localHttpPort = GetFreePort();
