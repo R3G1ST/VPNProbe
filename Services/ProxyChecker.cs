@@ -41,12 +41,13 @@ public static class ProxyChecker
         }
 
         var configPath = Path.Combine(Path.GetTempPath(), $"vpnprobe_{Guid.NewGuid():N}.json");
+        Process? process = null;
         try
         {
             var config = GenerateConfig(server);
             await File.WriteAllTextAsync(configPath, config, ct);
 
-            using var process = new Process();
+            process = new Process();
             process.StartInfo = new ProcessStartInfo
             {
                 FileName = SingBoxPath,
@@ -63,8 +64,6 @@ public static class ProxyChecker
             var testUrl = "http://cp.cloudflare.com/";
             var success = await TestThroughProxy(testUrl, ct);
 
-            try { process.Kill(); } catch { }
-
             if (success)
             {
                 result.ProxyOk = true;
@@ -72,12 +71,15 @@ public static class ProxyChecker
                 result.ProxyIp = ip;
             }
         }
+        catch (OperationCanceledException) { result.Error = "Timeout"; }
         catch (Exception ex)
         {
             result.Error = ex.Message;
         }
         finally
         {
+            try { process?.Kill(); } catch { }
+            try { process?.Dispose(); } catch { }
             try { File.Delete(configPath); } catch { }
         }
         return result;
