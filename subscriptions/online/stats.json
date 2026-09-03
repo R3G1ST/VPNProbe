@@ -1,0 +1,33 @@
+{
+  "total": 4568,
+  "checked_recent": 1088,
+  "working": 198,
+  "by_protocol": {
+    "hy2": {
+      "total": 214,
+      "working": 3
+    },
+    "hysteria2": {
+      "total": 81,
+      "working": 3
+    },
+    "ss": {
+      "total": 487,
+      "working": 153
+    },
+    "trojan": {
+      "total": 178,
+      "working": 16
+    },
+    "vless": {
+      "total": 3391,
+      "working": 741
+    },
+    "vmess": {
+      "total": 217,
+      "working": 85
+    }
+  },
+  "avg_ping": 37,
+  "avg_speed": 8.6
+}
