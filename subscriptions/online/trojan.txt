@@ -1,13 +1,11 @@
 trojan://DQMH0rnu-nQ2FL7fddCA306ApdzGuvFA@90.156.218.126:2223?allowInsecure=1&alpn=h2%2Chttp%2F1.1&security=tls&sni=vkc7.secured-by-tenzo.sbs&fp=safari#[B] %F0%9F%87%A8%F0%9F%87%AD%20Switzerland%20%7C%20%F0%9F%8C%90%20%5B%2ACIDR%5D%20VK
 trojan://kakashka13222@194.9.172.236:1105?security=tls&sni=194.9.172.236&insecure=1&allowInsecure=1&type=tcp&headerType=none&fp=ios#[D] %F0%9F%87%AB%F0%9F%87%B7%20France%2C%20Lyon%20%7C%20%5BBL%5D
-trojan://5359fe596ea94fc89e7086c91f382ad6@34hru34f9wrui.tr.snapeurop.com:4422?path=%2F&security=none&host=ads.mohsen3.ir&type=ws#[D] %F0%9F%87%B9%F0%9F%87%B7%20Turkey%2C%20Istanbul%20%7C%20%5BBL%5D
 trojan://humanity@www.ignitelimit.com:443?path=/assignment&security=tls&alpn=http/1.1&insecure=0&fp=chrome&type=ws&allowInsecure=0&sni=www.ignitelimit.com#[B] @meliproxyy
 trojan://bpb-trojan@digiclassor.ir:443?sni=10-Bpb-WOrKer-paneL.pagEs.DeV&peer=10-Bpb-WOrKer-paneL.pagEs.DeV&security=tls#[B] [033981] - 🇨🇦 Canada
 trojan://humanity@176.97.66.175:443?sni=www.ignitelimit.com&peer=www.ignitelimit.com&security=tls#[D] [034347] - 🇦🇪 United Arab Emirates
 trojan://humanity@172.67.74.2:443?sni=www.ignitelimit.com&peer=www.ignitelimit.com&security=tls#[B] [034348] - 🇨🇦 Canada
 trojan://7e70223b-f331-41d5-9313-02b8d2df2885@krhtybay.catcat321.com:20022?type=raw&security=tls&sni=hk.catxstar.com&alpn=http/1.1&fp=chrome&headertype=none#[B] [35750] - Telegram : @V2All
 trojan://vaj6czo9k9k338e9@31.15.17.68:51060?security=reality&sni=aws-us-east-1.amazon.com&fp=chrome&pbk=HzJpzhs8DSY5kcbIU_j0B6Q7eKoPD0VrMdIkxson7l0&sid=787f0980b64e3c&spx=/589e5521705a94f&type=tcp&headerType=none#[B] [35755] - Telegram : @V2All
-trojan://UQfj7bdfjibTjpUHfg72aew51S7fB32g@portal.buildtunnel.com:443?sni=portal.buildtunnel.com&type=tcp#[B] trojan-1083392944
 trojan://fef70590-17a9-4ddc-a38c-2b7467c083b5@kfcjp1.rvvs.im:30099?type=tcp#[D] trojan-1090323310
 trojan://02cd3bac-2a78-4dbb-82b9-6b64084ddd8e@us01.duotg.top:43022?allowInsecure=1&sni=www.microsoft.com&type=tcp#[B] trojan-956996559
 trojan://302cf77d-6fb7-4ac8-ae61-88e286340d59@hk03.qianmoip.win:50222?security=tls&headerType=none&type=tcp&sni=taobao.com#[B] 🃏MIGAVPNPRO
