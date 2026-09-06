@@ -30,7 +30,6 @@ ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTo0NjFmNDk5Ni1hNDMwLTQ0ODItYTEwMy1hY2VmMDcxMzI
 ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTo0NjFmNDk5Ni1hNDMwLTQ0ODItYTEwMy1hY2VmMDcxMzI4MWE@82.38.46.80:26911#[F] Нидерланды Dronten
 ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTo0NjFmNDk5Ni1hNDMwLTQ0ODItYTEwMy1hY2VmMDcxMzI4MWE@82.38.46.80:26914#[F] Нидерланды Dronten
 ss://YWVzLTI1Ni1jZmI6VHlOa0dtcDloczZlR3BESw@91.201.65.122:9092#[F] Нидерланды Dronten
-ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTp0dW5uZWwtYXN0cm92cG5fb2ZmaWNpYWwtYWU@ae-1.stunnel.cc:8444#[F] Нидерланды Dronten
 ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTp0dW5uZWwtYXN0cm92cG5fb2ZmaWNpYWxfZWU=@ee-1.stunnel.cc:8444#[F] Нидерланды Dronten
 ss://502ce704-dcec-4f92-9489-505c99ce6c89@f10.sarasimano.com:2096/?type=ws&encryption=none&flow=&path=/&security=tls#[F] Нидерланды Dronten
 ss://502ce704-dcec-4f92-9489-505c99ce6c89@f3.sarasimano.com:2096/?type=ws&encryption=none&flow=&path=/&security=tls#[F] Нидерланды Dronten
