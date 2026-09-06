@@ -1,31 +1,31 @@
 {
   "date": "2026-09-06",
-  "total": 3899,
-  "checked": 3899,
-  "working": 507,
+  "total": 3844,
+  "checked": 3844,
+  "working": 487,
   "by_protocol": {
     "vmess": {
-      "total": 94,
-      "working": 54
+      "total": 82,
+      "working": 52
     },
     "vless": {
-      "total": 617,
-      "working": 453
+      "total": 624,
+      "working": 435
     },
     "hysteria2": {
-      "total": 17,
-      "working": 0
-    },
-    "trojan": {
-      "total": 12,
-      "working": 0
-    },
-    "hy2": {
-      "total": 5,
+      "total": 11,
       "working": 0
     },
     "ss": {
-      "total": 71,
+      "total": 75,
+      "working": 0
+    },
+    "hy2": {
+      "total": 4,
+      "working": 0
+    },
+    "trojan": {
+      "total": 13,
       "working": 0
     }
   }
