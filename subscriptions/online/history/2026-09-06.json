@@ -1,0 +1,32 @@
+{
+  "date": "2026-09-06",
+  "total": 3865,
+  "checked": 3865,
+  "working": 516,
+  "by_protocol": {
+    "vmess": {
+      "total": 67,
+      "working": 51
+    },
+    "vless": {
+      "total": 718,
+      "working": 465
+    },
+    "hysteria2": {
+      "total": 6,
+      "working": 0
+    },
+    "trojan": {
+      "total": 10,
+      "working": 0
+    },
+    "hy2": {
+      "total": 18,
+      "working": 0
+    },
+    "ss": {
+      "total": 73,
+      "working": 0
+    }
+  }
+}
