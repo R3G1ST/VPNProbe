@@ -9,3 +9,4 @@ trojan://302cf77d-6fb7-4ac8-ae61-88e286340d59@hk03.qianmoip.win:50222?security=t
 trojan://fef70590-17a9-4ddc-a38c-2b7467c083b5@kfcjp1.rvvs.im:30099?type=tcp#trojan-1090323310
 trojan://7e70223b-f331-41d5-9313-02b8d2df2885@krhtybay.catcat321.com:20022?type=raw&security=tls&sni=hk.catxstar.com&alpn=http/1.1&fp=chrome&headertype=none#[35750] - Telegram : @V2All
 trojan://humanity@www.ignitelimit.com:443?path=/assignment&security=tls&alpn=http/1.1&insecure=0&fp=chrome&type=ws&allowInsecure=0&sni=www.ignitelimit.com#@meliproxyy
+trojan://7e70223b-f331-41d5-9313-02b8d2df2885@45.67.201.210:20068?type=raw&security=tls&sni=hk.catxstar.com&alpn=http/1.1&fp=chrome&headertype=none#[B]
