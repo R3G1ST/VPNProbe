@@ -1,8 +1,8 @@
 {
-  "total": 11132,
-  "checked_recent": 222,
-  "working": 132,
-  "dead": 6703,
+  "total": 11140,
+  "checked_recent": 232,
+  "working": 138,
+  "dead": 6837,
   "by_protocol": {
     "hy2": {
       "total": 326,
@@ -13,22 +13,22 @@
       "working": 3
     },
     "ss": {
-      "total": 2045,
+      "total": 2047,
       "working": 35
     },
     "trojan": {
-      "total": 429,
+      "total": 430,
       "working": 12
     },
     "vless": {
-      "total": 7574,
-      "working": 833
+      "total": 7578,
+      "working": 825
     },
     "vmess": {
-      "total": 501,
-      "working": 107
+      "total": 502,
+      "working": 109
     }
   },
-  "avg_ping": 46,
-  "avg_speed": 13.5
+  "avg_ping": 45,
+  "avg_speed": 13.4
 }
