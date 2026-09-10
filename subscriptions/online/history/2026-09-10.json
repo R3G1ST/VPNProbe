@@ -1,23 +1,23 @@
 {
   "date": "2026-09-10",
-  "total": 3869,
-  "checked": 3869,
-  "working": 328,
+  "total": 3840,
+  "checked": 3840,
+  "working": 308,
   "by_protocol": {
     "vmess": {
-      "total": 67,
-      "working": 47
+      "total": 47,
+      "working": 41
     },
     "vless": {
-      "total": 311,
-      "working": 281
+      "total": 307,
+      "working": 267
     },
     "hy2": {
       "total": 2,
       "working": 0
     },
     "ss": {
-      "total": 19,
+      "total": 17,
       "working": 0
     },
     "trojan": {
