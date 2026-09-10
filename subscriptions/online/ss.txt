@@ -27,5 +27,4 @@ ss://YWVzLTI1Ni1jZmI6VHlOa0dtcDloczZlR3BESw@91.201.65.122:9092#[F] Нидерл�
 ss://502ce704-dcec-4f92-9489-505c99ce6c89@f10.sarasimano.com:2096/?type=ws&encryption=none&flow=&path=/&security=tls#[F] Нидерланды Dronten
 ss://502ce704-dcec-4f92-9489-505c99ce6c89@f3.sarasimano.com:2096/?type=ws&encryption=none&flow=&path=/&security=tls#[F] Нидерланды Dronten
 ss://502ce704-dcec-4f92-9489-505c99ce6c89@f7.sarasimano.com:2096/?type=ws&encryption=none&flow=&path=/&security=tls#[F] Нидерланды Dronten
-ss://502ce704-dcec-4f92-9489-505c99ce6c89@n3.sarasimano.com:2096/?type=ws&encryption=none&flow=&path=/&security=tls#[F] Нидерланды Dronten
 ss://MjAyMi1ibGFrZTMtYWVzLTI1Ni1nY206RnVzajdwTEdvVG5MLzc1Tlh5enljSkpVeHJwODBIMVpvaU1tcCtDTlMzQT06d2t1d3o3bmVpOEs5VFU1cFZiTmpmL3RudWJmUUdOVXFyaEdjcXgzbEh3cz0@tr.privatevip.ir:2007#[F] Нидерланды Dronten
