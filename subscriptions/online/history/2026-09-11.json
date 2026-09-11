@@ -1,19 +1,19 @@
 {
   "date": "2026-09-11",
-  "total": 3865,
-  "checked": 3865,
-  "working": 274,
+  "total": 3878,
+  "checked": 3878,
+  "working": 278,
   "by_protocol": {
     "vmess": {
       "total": 50,
-      "working": 39
+      "working": 36
     },
     "vless": {
-      "total": 367,
-      "working": 235
+      "total": 387,
+      "working": 242
     },
     "ss": {
-      "total": 32,
+      "total": 33,
       "working": 0
     },
     "hy2": {
