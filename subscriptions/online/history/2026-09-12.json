@@ -1,16 +1,16 @@
 {
   "date": "2026-09-12",
-  "total": 3939,
-  "checked": 3939,
-  "working": 342,
+  "total": 3926,
+  "checked": 3926,
+  "working": 336,
   "by_protocol": {
     "vmess": {
-      "total": 52,
-      "working": 49
+      "total": 55,
+      "working": 51
     },
     "vless": {
-      "total": 333,
-      "working": 293
+      "total": 313,
+      "working": 285
     },
     "hysteria2": {
       "total": 1,
