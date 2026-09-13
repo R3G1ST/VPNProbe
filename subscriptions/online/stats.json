@@ -1,15 +1,15 @@
 {
-  "total": 14526,
-  "checked_recent": 214,
-  "working": 115,
-  "dead": 9661,
+  "total": 14544,
+  "checked_recent": 205,
+  "working": 105,
+  "dead": 9812,
   "by_protocol": {
     "hy2": {
-      "total": 351,
+      "total": 352,
       "working": 0
     },
     "hysteria2": {
-      "total": 275,
+      "total": 276,
       "working": 0
     },
     "ss": {
@@ -21,14 +21,14 @@
       "working": 1
     },
     "vless": {
-      "total": 10006,
+      "total": 10022,
       "working": 588
     },
     "vmess": {
       "total": 626,
-      "working": 105
+      "working": 106
     }
   },
-  "avg_ping": 54,
-  "avg_speed": 10.2
+  "avg_ping": 50,
+  "avg_speed": 10.4
 }
