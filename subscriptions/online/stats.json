@@ -1,8 +1,8 @@
 {
-  "total": 16511,
-  "checked_recent": 334,
-  "working": 233,
-  "dead": 11612,
+  "total": 16520,
+  "checked_recent": 290,
+  "working": 228,
+  "dead": 11646,
   "by_protocol": {
     "hy2": {
       "total": 382,
@@ -21,14 +21,14 @@
       "working": 0
     },
     "vless": {
-      "total": 11461,
-      "working": 519
+      "total": 11470,
+      "working": 522
     },
     "vmess": {
       "total": 682,
       "working": 95
     }
   },
-  "avg_ping": 103,
-  "avg_speed": 6.9
+  "avg_ping": 99,
+  "avg_speed": 7.8
 }
