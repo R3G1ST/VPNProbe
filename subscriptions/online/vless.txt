@@ -268,7 +268,6 @@ vless://b8d8a5b0-867f-4491-b4e4-30edc04bb10e@104.16.10.233:443?host=u.srilankang
 vless://b8d8a5b0-867f-4491-b4e4-30edc04bb10e@104.16.10.234:443?host=u.srilankangrill.online&path=%2F&security=tls&sni=u.srilankangrill.online&type=ws#[B] Канада Toronto
 vless://b8d8a5b0-867f-4491-b4e4-30edc04bb10e@104.18.26.90:443?host=u.srilankangrill.online&path=%2F&security=tls&sni=u.srilankangrill.online&type=ws#[B] Канада Toronto
 vless://b8d8a5b0-867f-4491-b4e4-30edc04bb10e@104.24.0.184:443?host=u.srilankangrill.online&path=%2F&security=tls&sni=u.srilankangrill.online&type=ws#[B] Канада Toronto
-vless://c09cfd91-b234-4998-9bed-a0211b7f5c3c@144.31.243.220:443?encryption=none&flow=xtls-rprx-vision&fp=&pbk=-qLezG1nUEtvOJi-Ra7WRYv-aHkv3PSefEuXpWV2G04&security=reality&sid=abcd1234&sni=lt.yservice.help&type=tcp#[B] Литва Vilnius
 vless://4480161e-2c59-4d37-8736-675c9af32bf1@72.56.92.177:40443?flow=xtls-rprx-vision&encryption=none&security=reality&sni=deepl.com&pbk=fWzCKXwvMXaacsl1DdFb1vKQ9l9cTK1G7udqmaYHL0Y&sid=01d1bf2d4755d40c&type=tcp&headerType=none#[B] Нидерланды Amsterdam
 vless://4480161e-2c59-4d37-8736-675c9af32bf1@netraidly.ru:40443?flow=xtls-rprx-vision&encryption=none&security=reality&sni=deepl.com&pbk=fWzCKXwvMXaacsl1DdFb1vKQ9l9cTK1G7udqmaYHL0Y&sid=01d1bf2d4755d40c&allowinsecure=0&type=tcp&headerType=none#[B] Нидерланды Amsterdam
 vless://39947382-3212-41c9-bc3a-589574ac8b23@84.235.244.108:22573?encryption=none&host=uae.unixzone.us&path=/&security=none&type=ws#[B] ОАЭ Dubai
