@@ -143,7 +143,6 @@ vless://65c56e1f-5c41-40bc-b0b5-9346772476ca@104.16.112.35:2053?fp=edge&host=sin
 vless://b8d8a5b0-867f-4491-b4e4-30edc04bb10e@104.16.156.227:443?host=u.srilankangrill.online&path=%2F&security=tls&sni=u.srilankangrill.online&type=ws#[A] Канада Toronto
 vless://b8d8a5b0-867f-4491-b4e4-30edc04bb10e@104.16.3.98:443?host=u.srilankangrill.online&path=%2F&security=tls&sni=u.srilankangrill.online&type=ws#[A] Канада Toronto
 vless://b8d8a5b0-867f-4491-b4e4-30edc04bb10e@104.17.117.137:443?host=u.srilankangrill.online&path=%2F&security=tls&sni=u.srilankangrill.online&type=ws#[A] Канада Toronto
-vless://65c56e1f-5c41-40bc-b0b5-9346772476ca@104.17.159.229:2053?fp=edge&host=singapore.36109178.xyz&path=%2Fstatic%2Fmedia%2Fvideo-chunk.f4v&security=tls&sni=singapore.36109178.xyz&type=ws#[A] Канада Toronto
 vless://65c56e1f-5c41-40bc-b0b5-9346772476ca@104.17.159.75:2053?fp=edge&host=singapore.36109178.xyz&path=%2Fstatic%2Fmedia%2Fvideo-chunk.f4v&security=tls&sni=singapore.36109178.xyz&type=ws#[A] Канада Toronto
 vless://65c56e1f-5c41-40bc-b0b5-9346772476ca@104.17.52.155:2053?fp=edge&host=singapore.36109178.xyz&path=%2Fstatic%2Fmedia%2Fvideo-chunk.f4v&security=tls&sni=singapore.36109178.xyz&type=ws#[A] Канада Toronto
 vless://b8d8a5b0-867f-4491-b4e4-30edc04bb10e@104.21.70.228:443?host=u.srilankangrill.online&path=%2F&security=tls&sni=u.srilankangrill.online&type=ws#[A] Канада Toronto
