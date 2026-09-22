@@ -22,11 +22,11 @@
     },
     "vless": {
       "total": 11583,
-      "working": 262
+      "working": 261
     },
     "vmess": {
       "total": 689,
-      "working": 72
+      "working": 68
     }
   },
   "avg_ping": 0,
