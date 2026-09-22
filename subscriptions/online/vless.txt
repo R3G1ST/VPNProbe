@@ -223,7 +223,6 @@ vless://85a6bd94-83a9-4e80-849f-c06d7011d1a4@35.201.163.218:30837?flow=xtls-rprx
 vless://41b96ee9-ee5e-455f-9753-187a9dead97a@35.221.158.209:32981?flow=xtls-rprx-vision&fp=safari&pbk=JSn0GPz1WOSTUDBxN_XYnhgb2Jpjc2LpfBTzX1j3V2E&security=reality&sid=70f4b7a4c40636&sni=www.sony.com&type=tcp#[B+] Тайвань Taipei
 vless://d342d11e-d424-4583-b36e-524ab1f0afa4@103.137.22.71:443?host=cdn8848.776676.xyz&path=%2Fregister%3Fed%3D2560&security=tls&sni=cdn8848.776676.xyz&type=ws&fp=chrome#[B+] Тайвань Zhongli
 vless://814bd064-544d-4255-a070-5705c03f6da9@3.39.4.109:13672?flow=xtls-rprx-vision&fp=chrome&pbk=k2hPp0tTW0Da-HK94wYpSCLbuK44LfGqC2MSJIM1Ti0&security=reality&sid=48050fab&sni=www.apple.com&type=raw#[B+] Южная Корея Incheon
-vless://d342d11e-d424-4583-b36e-524ab1f0afa4@45.147.49.149:443?encryption=none&host=cdn8848.776676.xyz&path=%2Fposts%2Fnovels%2Forder%3Fed%3D2560&security=tls&sni=cdn8848.776676.xyz&type=ws&fp=android#[B] Германия Dreieich
 vless://d342d11e-d424-4583-b36e-524ab1f0afa4@68.64.179.129:443?host=cdn8848.776676.xyz&path=%2Fcode%3Fed%3D2560&security=tls&sni=cdn8848.776676.xyz&type=ws&fp=chrome#[B] Гонконг Hong Kong
 vless://d342d11e-d424-4583-b36e-524ab1f0afa4@8.222.84.103:443?encryption=none&security=tls&sni=cdn8848.776676.xyz&type=ws&path=%2Fmember%2Fdiscount&host=cdn8848.776676.xyz&allowInsecure=0&insecure=0&fp=chrome#[B] Гонконг Hong Kong
 vless://b585dc5e-55bf-4a8b-913a-27c9ccac05c3@158.180.231.216:443/?type=ws&encryption=none&flow=&host=bab-6.site&path=/vws/&security=tls&sni=bab-6.site&fp=chrome&packetEncoding=xudp#[B] Италия Milan
