@@ -234,7 +234,6 @@ vless://4480161e-2c59-4d37-8736-675c9af32bf1@72.56.92.177:40443?flow=xtls-rprx-v
 vless://4480161e-2c59-4d37-8736-675c9af32bf1@netraidly.ru:40443?flow=xtls-rprx-vision&encryption=none&security=reality&sni=deepl.com&pbk=fWzCKXwvMXaacsl1DdFb1vKQ9l9cTK1G7udqmaYHL0Y&sid=01d1bf2d4755d40c&allowinsecure=0&type=tcp&headerType=none#[B] Нидерланды Amsterdam
 vless://39947382-3212-41c9-bc3a-589574ac8b23@84.235.244.108:22573?encryption=none&host=uae.unixzone.us&path=/&security=none&type=ws#[B] ОАЭ Dubai
 vless://8b84bbec-9a55-47c2-ac2e-03c41065e572@64.176.64.194:25585?security=none&type=tcp#[B] Польша Warsaw
-vless://29c3dd6b-b164-40ca-a0d5-f06aca52a8b2@141.193.213.20:8443?host=u.srilankangrill.online&security=tls&sni=u.srilankangrill.online&type=ws#[B] США Austin
 vless://29c3dd6b-b164-40ca-a0d5-f06aca52a8b2@141.193.213.21:8443?fp=chrome&host=u.srilankangrill.online&path=%2F&security=tls&sni=u.srilankangrill.online&type=ws#[B] США Austin
 vless://4856478b-95a8-4417-83e4-3fd51bc6238a@70.39.196.142:443?flow=xtls-rprx-vision&fp=safari&pbk=hdZ4qUCdNtIkIfhb1KPVxxDt4rsseFxaFH093kVfRkE&security=reality&sid=7efbd378&sni=www.cloudflare.com&type=tcp#[B] США Los Angeles
 vless://4e4f1f70-5e56-4a76-bb9d-db087f4690c4@162.159.254.3:443?fp=chrome&host=jp3.yohototo.top&path=%2Ftyxyws&security=tls&sni=jp3.yohototo.top&type=ws#[B] США Newark
