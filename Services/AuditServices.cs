@@ -264,41 +264,43 @@ public static class SpeedAuditService
     {
         var result = new SpeedResult();
 
+        // Основной метод: Cloudflare speed test (надёжнее, чем speedtest.net, который часто блокирует запросы)
         try
         {
-            var servers = await _http.GetStringAsync("https://www.speedtest.net/api/js/servers?engine=ip&limit=5", ct);
-            var doc = JsonDocument.Parse(servers);
-            if (doc.RootElement.GetArrayLength() > 0)
-            {
-                var server = doc.RootElement[0];
-                result.Server = server.TryGetProperty("name", out var n) ? n.GetString() ?? "" : "";
-                var url = server.TryGetProperty("url", out var u) ? u.GetString() ?? "" : "";
-                if (!string.IsNullOrEmpty(url))
-                {
-                    try
-                    {
-                        var sw = Stopwatch.StartNew();
-                        var dlBytes = await _http.GetByteArrayAsync($"{url}random2000x2000.jpg", ct);
-                        sw.Stop();
-                        var seconds = sw.Elapsed.TotalSeconds;
-                        result.DownloadMbps = seconds > 0.001 ? Math.Round(dlBytes.Length * 8.0 / 1_000_000 / seconds, 1) : 0;
-                    }
-                    catch { }
-                }
-            }
+            var sw = Stopwatch.StartNew();
+            var dlBytes = await _http.GetByteArrayAsync("https://speed.cloudflare.com/__down?bytes=10000000", ct);
+            sw.Stop();
+            var seconds = sw.Elapsed.TotalSeconds;
+            result.DownloadMbps = seconds > 0.001 ? Math.Round(dlBytes.Length * 8.0 / 1_000_000 / seconds, 1) : 0;
+            result.Server = "Cloudflare";
         }
         catch { }
 
+        // Фоллбэк: speedtest.net (может блокировать автоматические запросы)
         if (result.DownloadMbps <= 0)
         {
             try
             {
-                var sw = Stopwatch.StartNew();
-                var dlBytes = await _http.GetByteArrayAsync("https://speed.cloudflare.com/__down?bytes=10000000", ct);
-                sw.Stop();
-                var seconds = sw.Elapsed.TotalSeconds;
-                result.DownloadMbps = seconds > 0.001 ? Math.Round(dlBytes.Length * 8.0 / 1_000_000 / seconds, 1) : 0;
-                result.Server = "Cloudflare";
+                var servers = await _http.GetStringAsync("https://www.speedtest.net/api/js/servers?engine=ip&limit=5", ct);
+                var doc = JsonDocument.Parse(servers);
+                if (doc.RootElement.GetArrayLength() > 0)
+                {
+                    var server = doc.RootElement[0];
+                    result.Server = server.TryGetProperty("name", out var n) ? n.GetString() ?? "" : "";
+                    var url = server.TryGetProperty("url", out var u) ? u.GetString() ?? "" : "";
+                    if (!string.IsNullOrEmpty(url))
+                    {
+                        try
+                        {
+                            var sw = Stopwatch.StartNew();
+                            var dlBytes = await _http.GetByteArrayAsync($"{url}random2000x2000.jpg", ct);
+                            sw.Stop();
+                            var seconds = sw.Elapsed.TotalSeconds;
+                            result.DownloadMbps = seconds > 0.001 ? Math.Round(dlBytes.Length * 8.0 / 1_000_000 / seconds, 1) : 0;
+                        }
+                        catch { }
+                    }
+                }
             }
             catch { }
         }
@@ -583,9 +585,11 @@ public static class GeoBlockService
             var r = new GeoBlockResult { Service = service, Category = category };
             try
             {
-                using var req = new HttpRequestMessage(HttpMethod.Head, url);
+                // Используем GET с HttpCompletionOption.ResponseHeadersRead вместо HEAD,
+                // т.к. многие серверы (YouTube, Netflix, Steam) блокируют HEAD с 405.
+                using var req = new HttpRequestMessage(HttpMethod.Get, url);
                 req.Headers.Add("User-Agent", "Mozilla/5.0");
-                var resp = await _http.SendAsync(req, ct);
+                using var resp = await _http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct);
                 r.Blocked = resp.StatusCode == HttpStatusCode.Forbidden ||
                             resp.StatusCode == HttpStatusCode.ServiceUnavailable ||
                             (int)resp.StatusCode == 451 ||

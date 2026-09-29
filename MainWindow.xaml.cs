@@ -261,16 +261,20 @@ public partial class MainWindow : Window
 
     private static string MakeAscii(string input)
     {
+        if (string.IsNullOrWhiteSpace(input)) return "Server";
+
         var sb = new System.Text.StringBuilder();
+        bool hasAny = false;
         foreach (var c in input)
         {
-            if (c >= 'a' && c <= 'z') sb.Append(c);
-            else if (c >= 'A' && c <= 'Z') sb.Append(c);
-            else if (c >= '0' && c <= '9') sb.Append(c);
-            else if (c == '-' || c == '_') sb.Append(c);
-            else if (c == ' ') sb.Append('_');
+            if (c >= 'a' && c <= 'z') { sb.Append(c); hasAny = true; }
+            else if (c >= 'A' && c <= 'Z') { sb.Append(c); hasAny = true; }
+            else if (c >= '0' && c <= '9') { sb.Append(c); hasAny = true; }
+            else if (c == '-' || c == '_') { sb.Append(c); hasAny = true; }
+            else if (c == ' ') { sb.Append('_'); hasAny = true; }
+            // Эмодзи (высокие Unicode-диапазоны) и другие символы — пропускаем
         }
-        return sb.Length > 0 ? sb.ToString() : "Server";
+        return hasAny ? sb.ToString() : "Server";
     }
 
     private void TabServers_Click(object sender, MouseButtonEventArgs e)
@@ -581,11 +585,11 @@ public class CheckResultDisplay : System.ComponentModel.INotifyPropertyChanged
     {
         get
         {
-            if (DpiBlocked) return "DPI blocked";
-            if (PingChecked && !PingOk) return "No ping";
+            // Приоритет: proxy > port/tls > ping
             if (ProxyOk) return "OK";
             if (!PortOpen) return "Port blocked";
             if (!TlsOk) return "TLS fail";
+            if (PingChecked && !PingOk) return "No ping";
             return "Fail";
         }
     }

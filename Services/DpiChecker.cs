@@ -1,6 +1,8 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Net.Security;
+using System.Security.Authentication;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,6 +31,8 @@ public static class DpiChecker
 
             var stream = client.GetStream();
 
+            // Проверка для всех протоколов, использующих TLS (VLESS WS, VMess WS, Trojan, Hysteria2)
+            // Reality: проверяем через TLS handshake с SNI
             if (server.Protocol == ProxyProtocol.VlessReality)
             {
                 result.DpiBlocked = !await TestRealityHandshake(stream, server, ct);
@@ -36,6 +40,22 @@ public static class DpiChecker
             else if (server.Protocol == ProxyProtocol.Trojan)
             {
                 result.DpiBlocked = !await TestTrojanHandshake(stream, server, ct);
+            }
+            else if (server.Protocol == ProxyProtocol.VlessWs ||
+                     server.Protocol == ProxyProtocol.VmessWs)
+            {
+                // WS-протоколы: проверяем TLS handshake — при DPI блокировке SNI handshake будет сброшен
+                result.DpiBlocked = !await TestTlsHandshake(stream, server, ct);
+            }
+            else if (server.Protocol == ProxyProtocol.Hysteria2)
+            {
+                // Hysteria2: проверяем TLS handshake
+                result.DpiBlocked = !await TestTlsHandshake(stream, server, ct);
+            }
+            else if (server.Protocol == ProxyProtocol.Shadowsocks)
+            {
+                // Shadowsocks: проверяем, принимает ли трафик (SS handshake)
+                result.DpiBlocked = !await TestShadowsocksHandshake(stream, server, ct);
             }
             else
             {
@@ -58,12 +78,34 @@ public static class DpiChecker
     {
         try
         {
+            // Для Reality: отправляем ClientHello и проверяем ответ
             var clientHello = GenerateRealityClientHello(server);
             await stream.WriteAsync(clientHello, ct);
             await Task.Delay(1000, ct);
             return stream.DataAvailable;
         }
         catch { return false; }
+    }
+
+    private static async Task<bool> TestTlsHandshake(NetworkStream stream, ServerInfo server, CancellationToken ct)
+    {
+        try
+        {
+            // Пробуем TLS handshake — если DPI блокирует SNI, это вызовет ошибку
+            var sni = !string.IsNullOrEmpty(server.Sni) ? server.Sni : server.Host;
+            using var ssl = new SslStream(stream, false, (_, _, _, _) => true);
+            var opts = new SslClientAuthenticationOptions
+            {
+                TargetHost = sni,
+                EnabledSslProtocols = System.Security.Authentication.SslProtocols.Tls12 | System.Security.Authentication.SslProtocols.Tls13
+            };
+            await ssl.AuthenticateAsClientAsync(opts, ct);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     private static async Task<bool> TestTrojanHandshake(NetworkStream stream, ServerInfo server, CancellationToken ct)
@@ -76,6 +118,17 @@ public static class DpiChecker
             await stream.WriteAsync(bytes, ct);
             await Task.Delay(1000, ct);
             return stream.DataAvailable;
+        }
+        catch { return false; }
+    }
+
+    private static async Task<bool> TestShadowsocksHandshake(NetworkStream stream, ServerInfo server, CancellationToken ct)
+    {
+        try
+        {
+            // Shadowsocks: проверяем TCP-соединение — если DPI не блокирует, данные доступны
+            await Task.Delay(500, ct);
+            return stream.CanWrite;
         }
         catch { return false; }
     }

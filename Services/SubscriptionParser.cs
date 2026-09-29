@@ -4,7 +4,7 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text;
-using System.Text.RegularExpressions;
+using System.Text.Json;
 using System.Threading.Tasks;
 using VPNProbe.Models;
 
@@ -159,21 +159,25 @@ public static class SubscriptionParser
         try
         {
             var json = TryBase64Decode(data);
-            var psMatch = Regex.Match(json, @"""ps""\s*:\s*""([^""]*)""");
-            var addMatch = Regex.Match(json, @"""add""\s*:\s*""([^""]*)""");
-            var portMatch = Regex.Match(json, @"""port""\s*:\s*""?(\d+)""?");
-            var idMatch = Regex.Match(json, @"""id""\s*:\s*""([^""]*)""");
-            var netMatch = Regex.Match(json, @"""net""\s*:\s*""([^""]*)""");
-            var sniMatch = Regex.Match(json, @"""sni""\s*:\s*""([^""]*)""");
-            var pathMatch = Regex.Match(json, @"""path""\s*:\s*""([^""]*)""");
+            var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
 
-            if (addMatch.Success) info.Host = addMatch.Groups[1].Value;
-            if (portMatch.Success) info.Port = int.Parse(portMatch.Groups[1].Value);
-            if (idMatch.Success) info.Uuid = idMatch.Groups[1].Value;
-            if (sniMatch.Success) info.Sni = sniMatch.Groups[1].Value;
-            if (pathMatch.Success) info.Path = pathMatch.Groups[1].Value;
-            info.Name = psMatch.Success ? psMatch.Groups[1].Value : info.Host;
-            info.Flow = netMatch.Success && netMatch.Groups[1].Value == "ws" ? "ws" : "";
+            if (root.TryGetProperty("ps", out var psProp)) info.Name = psProp.GetString() ?? info.Host;
+            if (root.TryGetProperty("add", out var addProp)) info.Host = addProp.GetString() ?? info.Host;
+            if (root.TryGetProperty("port", out var portProp)) info.Port = portProp.GetInt32();
+            if (root.TryGetProperty("id", out var idProp)) info.Uuid = idProp.GetString() ?? info.Uuid;
+            if (root.TryGetProperty("net", out var netProp) && netProp.GetString() == "ws")
+                info.Flow = "ws";
+
+            // SNI и path могут быть вложенными в tls или transport
+            if (root.TryGetProperty("sni", out var sniProp))
+                info.Sni = sniProp.GetString() ?? "";
+            if (root.TryGetProperty("path", out var pathProp))
+                info.Path = pathProp.GetString() ?? "";
+
+            // VMess может иметь вложенный объект "obfs_param" или "opts"
+            if (root.TryGetProperty("tls", out var tlsProp) && tlsProp.TryGetProperty("sni", out var tlsSniProp))
+                info.Sni = tlsSniProp.GetString() ?? info.Sni;
         }
         catch { info.Name = info.Host; }
         return info;

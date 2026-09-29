@@ -4,9 +4,7 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
-using System.Text;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using VPNProbe.Models;
@@ -17,6 +15,12 @@ public static class ProxyChecker
 {
     public static readonly string SingBoxPath = FindSingBox();
 
+    private static readonly JsonSerializerOptions _jsonOpts = new()
+    {
+        WriteIndented = false,
+        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    };
+
     private static string FindSingBox()
     {
         var candidates = new[]
@@ -24,6 +28,14 @@ public static class ProxyChecker
             Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "sing-box.exe"),
             @"C:\sing-box\sing-box.exe",
             @"C:\Tools\sing-box.exe",
+            @"C:\Program Files\sing-box\sing-box.exe",
+            @"C:\Program Files (x86)\sing-box\sing-box.exe",
+            @"D:\sing-box\sing-box.exe",
+            @"D:\Tools\sing-box.exe",
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "sing-box", "sing-box.exe"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "sing-box", "sing-box.exe"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", "sing-box", "sing-box.exe"),
+            @"C:\Program Files\VPNProbe\sing-box.exe",
         };
         foreach (var c in candidates)
             if (File.Exists(c)) return c;
@@ -91,118 +103,159 @@ public static class ProxyChecker
         return result;
     }
 
+    private static object BuildOutbound(ServerInfo server)
+    {
+        var baseOut = new System.Collections.Generic.Dictionary<string, object>
+        {
+            ["server"] = server.Host,
+            ["server_port"] = server.Port
+        };
+
+        return server.Protocol switch
+        {
+            ProxyProtocol.VlessReality => new System.Collections.Generic.Dictionary<string, object>
+            {
+                ["type"] = "vless",
+                ["tag"] = "proxy",
+                ["uuid"] = server.Uuid,
+                ["flow"] = server.Flow,
+                ["tls"] = new System.Collections.Generic.Dictionary<string, object>
+                {
+                    ["enabled"] = true,
+                    ["server_name"] = server.Sni,
+                    ["utls"] = new System.Collections.Generic.Dictionary<string, object>
+                    {
+                        ["enabled"] = true,
+                        ["fingerprint"] = server.Fingerprint
+                    },
+                    ["reality"] = new System.Collections.Generic.Dictionary<string, object>
+                    {
+                        ["enabled"] = true,
+                        ["public_key"] = server.PublicKey,
+                        ["short_id"] = server.ShortId
+                    }
+                }
+            },
+            ProxyProtocol.VlessWs => new System.Collections.Generic.Dictionary<string, object>
+            {
+                ["type"] = "vless",
+                ["tag"] = "proxy",
+                ["uuid"] = server.Uuid,
+                ["tls"] = new System.Collections.Generic.Dictionary<string, object>
+                {
+                    ["enabled"] = true,
+                    ["server_name"] = server.Sni,
+                    ["utls"] = new System.Collections.Generic.Dictionary<string, object>
+                    {
+                        ["enabled"] = true,
+                        ["fingerprint"] = server.Fingerprint
+                    }
+                },
+                ["transport"] = new System.Collections.Generic.Dictionary<string, object>
+                {
+                    ["type"] = "ws",
+                    ["path"] = server.Path,
+                    ["headers"] = new System.Collections.Generic.Dictionary<string, string>
+                    {
+                        ["Host"] = server.HostHeader
+                    }
+                }
+            },
+            ProxyProtocol.VmessWs => new System.Collections.Generic.Dictionary<string, object>
+            {
+                ["type"] = "vmess",
+                ["tag"] = "proxy",
+                ["uuid"] = server.Uuid,
+                ["security"] = "auto",
+                ["tls"] = new System.Collections.Generic.Dictionary<string, object>
+                {
+                    ["enabled"] = true,
+                    ["server_name"] = server.Sni,
+                    ["utls"] = new System.Collections.Generic.Dictionary<string, object>
+                    {
+                        ["enabled"] = true,
+                        ["fingerprint"] = server.Fingerprint
+                    }
+                },
+                ["transport"] = new System.Collections.Generic.Dictionary<string, object>
+                {
+                    ["type"] = "ws",
+                    ["path"] = server.Path,
+                    ["headers"] = new System.Collections.Generic.Dictionary<string, string>
+                    {
+                        ["Host"] = server.HostHeader
+                    }
+                }
+            },
+            ProxyProtocol.Trojan => new System.Collections.Generic.Dictionary<string, object>
+            {
+                ["type"] = "trojan",
+                ["tag"] = "proxy",
+                ["password"] = server.Password,
+                ["tls"] = new System.Collections.Generic.Dictionary<string, object>
+                {
+                    ["enabled"] = true,
+                    ["server_name"] = server.Sni,
+                    ["utls"] = new System.Collections.Generic.Dictionary<string, object>
+                    {
+                        ["enabled"] = true,
+                        ["fingerprint"] = server.Fingerprint
+                    }
+                }
+            },
+            ProxyProtocol.Hysteria2 => new System.Collections.Generic.Dictionary<string, object>
+            {
+                ["type"] = "hysteria2",
+                ["tag"] = "proxy",
+                ["password"] = server.Password,
+                ["tls"] = new System.Collections.Generic.Dictionary<string, object>
+                {
+                    ["enabled"] = true,
+                    ["server_name"] = server.Sni,
+                    ["insecure"] = true
+                }
+            },
+            ProxyProtocol.Shadowsocks => new System.Collections.Generic.Dictionary<string, object>
+            {
+                ["type"] = "shadowsocks",
+                ["tag"] = "proxy",
+                ["server"] = server.Host,
+                ["server_port"] = server.Port,
+                ["method"] = "aes-256-gcm",
+                ["password"] = server.Password
+            },
+            _ => new System.Collections.Generic.Dictionary<string, object>()
+        };
+    }
+
     public static (string config, int port) GenerateConfigWithPort(ServerInfo server)
     {
         var port = GetFreePort();
+        var outbound = BuildOutbound(server);
 
-        var outbound = server.Protocol switch
+        var config = new System.Collections.Generic.Dictionary<string, object>
         {
-            ProxyProtocol.VlessReality => $$"""
-                "type": "vless",
-                "server": "{{server.Host}}",
-                "server_port": {{server.Port}},
-                "uuid": "{{server.Uuid}}",
-                "flow": "{{server.Flow}}",
-                "tls": {
-                    "enabled": true,
-                    "server_name": "{{server.Sni}}",
-                    "utls": { "enabled": true, "fingerprint": "{{server.Fingerprint}}" },
-                    "reality": {
-                        "enabled": true,
-                        "public_key": "{{server.PublicKey}}",
-                        "short_id": "{{server.ShortId}}"
-                    }
-                }
-            """,
-            ProxyProtocol.VlessWs => $$"""
-                "type": "vless",
-                "server": "{{server.Host}}",
-                "server_port": {{server.Port}},
-                "uuid": "{{server.Uuid}}",
-                "tls": {
-                    "enabled": true,
-                    "server_name": "{{server.Sni}}",
-                    "utls": { "enabled": true, "fingerprint": "{{server.Fingerprint}}" }
-                },
-                "transport": {
-                    "type": "ws",
-                    "path": "{{server.Path}}",
-                    "headers": { "Host": "{{server.HostHeader}}" }
-                }
-            """,
-            ProxyProtocol.VmessWs => $$"""
-                "type": "vmess",
-                "server": "{{server.Host}}",
-                "server_port": {{server.Port}},
-                "uuid": "{{server.Uuid}}",
-                "security": "auto",
-                "tls": {
-                    "enabled": true,
-                    "server_name": "{{server.Sni}}",
-                    "utls": { "enabled": true, "fingerprint": "{{server.Fingerprint}}" }
-                },
-                "transport": {
-                    "type": "ws",
-                    "path": "{{server.Path}}",
-                    "headers": { "Host": "{{server.HostHeader}}" }
-                }
-            """,
-            ProxyProtocol.Trojan => $$"""
-                "type": "trojan",
-                "server": "{{server.Host}}",
-                "server_port": {{server.Port}},
-                "password": "{{server.Password}}",
-                "tls": {
-                    "enabled": true,
-                    "server_name": "{{server.Sni}}",
-                    "utls": { "enabled": true, "fingerprint": "{{server.Fingerprint}}" }
-                }
-            """,
-            ProxyProtocol.Hysteria2 => $$"""
-                "type": "hysteria2",
-                "server": "{{server.Host}}",
-                "server_port": {{server.Port}},
-                "password": "{{server.Password}}",
-                "tls": {
-                    "enabled": true,
-                    "server_name": "{{server.Sni}}",
-                    "insecure": true
-                }
-            """,
-            ProxyProtocol.Shadowsocks => $$"""
-                "type": "shadowsocks",
-                "server": "{{server.Host}}",
-                "server_port": {{server.Port}},
-                "method": "aes-256-gcm",
-                "password": "{{server.Password}}"
-            """,
-            _ => ""
+            ["log"] = new System.Collections.Generic.Dictionary<string, object> { ["level"] = "warn" },
+            ["inbounds"] = new[] { new System.Collections.Generic.Dictionary<string, object>
+            {
+                ["type"] = "mixed",
+                ["listen"] = "127.0.0.1",
+                ["listen_port"] = port
+            }},
+            ["outbounds"] = new object[]
+            {
+                outbound,
+                new System.Collections.Generic.Dictionary<string, object> { ["type"] = "direct", ["tag"] = "direct" },
+                new System.Collections.Generic.Dictionary<string, object> { ["type"] = "block", ["tag"] = "block" }
+            },
+            ["route"] = new System.Collections.Generic.Dictionary<string, object>
+            {
+                ["rules"] = Array.Empty<object>(),
+                ["final"] = "proxy"
+            }
         };
 
-        if (string.IsNullOrEmpty(outbound)) return ("{}", 0);
-
-        var config = $$"""
-        {
-            "log": { "level": "warn" },
-            "inbounds": [
-                { "type": "mixed", "listen": "127.0.0.1", "listen_port": {{port}} }
-            ],
-            "outbounds": [
-                {
-                    "tag": "proxy",
-                    {{outbound.Trim()}}
-                },
-                { "type": "direct", "tag": "direct" },
-                { "type": "block", "tag": "block" }
-            ],
-            "route": {
-                "rules": [],
-                "final": "proxy"
-            }
-        }
-        """;
-
-        return (config, port);
+        return (JsonSerializer.Serialize(config, _jsonOpts), port);
     }
 
     private static async Task<bool> TestThroughProxy(string url, int httpPort, CancellationToken ct)
@@ -242,226 +295,65 @@ public static class ProxyChecker
     {
         var localSocksPort = GetFreePort();
         var localHttpPort = GetFreePort();
+        var outbound = BuildOutbound(server);
 
-        var outbound = server.Protocol switch
+        // Override tags and listen for this public config method
+        if (outbound is System.Collections.Generic.Dictionary<string, object> dict)
         {
-            ProxyProtocol.VlessReality => $$"""
-                "type": "vless",
-                "server": "{{server.Host}}",
-                "server_port": {{server.Port}},
-                "uuid": "{{server.Uuid}}",
-                "flow": "{{server.Flow}}",
-                "tls": {
-                    "enabled": true,
-                    "server_name": "{{server.Sni}}",
-                    "utls": { "enabled": true, "fingerprint": "{{server.Fingerprint}}" },
-                    "reality": {
-                        "enabled": true,
-                        "public_key": "{{server.PublicKey}}",
-                        "short_id": "{{server.ShortId}}"
-                    }
-                }
-            """,
-            ProxyProtocol.VlessWs => $$"""
-                "type": "vless",
-                "server": "{{server.Host}}",
-                "server_port": {{server.Port}},
-                "uuid": "{{server.Uuid}}",
-                "tls": {
-                    "enabled": true,
-                    "server_name": "{{server.Sni}}",
-                    "utls": { "enabled": true, "fingerprint": "chrome" }
-                },
-                "transport": {
-                    "type": "ws",
-                    "path": "{{server.Path}}",
-                    "headers": { "Host": "{{server.Host}}" }
-                }
-            """,
-            ProxyProtocol.Trojan => $$"""
-                "type": "trojan",
-                "server": "{{server.Host}}",
-                "server_port": {{server.Port}},
-                "password": "{{server.Password}}",
-                "tls": {
-                    "enabled": true,
-                    "server_name": "{{server.Sni}}",
-                    "utls": { "enabled": true, "fingerprint": "chrome" }
-                }
-            """,
-            ProxyProtocol.Hysteria2 => $$"""
-                "type": "hysteria2",
-                "server": "{{server.Host}}",
-                "server_port": {{server.Port}},
-                "password": "{{server.Password}}",
-                "tls": {
-                    "enabled": true,
-                    "server_name": "{{server.Sni}}"
-                }
-            """,
-            ProxyProtocol.VmessWs => $$"""
-                "type": "vmess",
-                "server": "{{server.Host}}",
-                "server_port": {{server.Port}},
-                "uuid": "{{server.Uuid}}",
-                "alter_id": 0,
-                "tls": {
-                    "enabled": true,
-                    "server_name": "{{server.Sni}}",
-                    "utls": { "enabled": true, "fingerprint": "chrome" }
-                },
-                "transport": {
-                    "type": "ws",
-                    "path": "{{server.Path}}"
-                }
-            """,
-            ProxyProtocol.Shadowsocks => $$"""
-                "type": "shadowsocks",
-                "server": "{{server.Host}}",
-                "server_port": {{server.Port}},
-                "method": "aes-256-gcm",
-                "password": "{{server.Password}}"
-            """,
-            _ => ""
-        };
-
-        if (string.IsNullOrEmpty(outbound)) return "{}";
-
-        return $$"""
-        {
-            "log": { "level": "warn" },
-            "inbounds": [
-                { "type": "socks", "listen": "127.0.0.1", "listen_port": {{localSocksPort}} },
-                { "type": "http", "listen": "127.0.0.1", "listen_port": {{localHttpPort}} }
-            ],
-            "outbounds": [
-                {
-                    "tag": "proxy",
-                    {{outbound.Trim()}}
-                },
-                { "type": "direct", "tag": "direct" },
-                { "type": "block", "tag": "block" }
-            ],
-            "route": {
-                "rules": [],
-                "final": "proxy"
-            }
+            dict["tag"] = "proxy";
         }
-        """;
+
+        return JsonSerializer.Serialize(new System.Collections.Generic.Dictionary<string, object>
+        {
+            ["log"] = new System.Collections.Generic.Dictionary<string, object> { ["level"] = "warn" },
+            ["inbounds"] = new[] {
+                new System.Collections.Generic.Dictionary<string, object>
+                { ["type"] = "socks", ["listen"] = "127.0.0.1", ["listen_port"] = localSocksPort },
+                new System.Collections.Generic.Dictionary<string, object>
+                { ["type"] = "http", ["listen"] = "127.0.0.1", ["listen_port"] = localHttpPort }
+            },
+            ["outbounds"] = new object[]
+            {
+                outbound,
+                new System.Collections.Generic.Dictionary<string, object> { ["type"] = "direct", ["tag"] = "direct" },
+                new System.Collections.Generic.Dictionary<string, object> { ["type"] = "block", ["tag"] = "block" }
+            },
+            ["route"] = new System.Collections.Generic.Dictionary<string, object>
+            {
+                ["rules"] = Array.Empty<object>(),
+                ["final"] = "proxy"
+            }
+        }, _jsonOpts);
     }
 
     public static string GenerateConfigOnPorts(ServerInfo server, int socksPort, int httpPort)
     {
-        var outbound = server.Protocol switch
-        {
-            ProxyProtocol.VlessReality => $$"""
-                "type": "vless",
-                "server": "{{server.Host}}",
-                "server_port": {{server.Port}},
-                "uuid": "{{server.Uuid}}",
-                "flow": "{{server.Flow}}",
-                "tls": {
-                    "enabled": true,
-                    "server_name": "{{server.Sni}}",
-                    "utls": { "enabled": true, "fingerprint": "{{server.Fingerprint}}" },
-                    "reality": {
-                        "enabled": true,
-                        "public_key": "{{server.PublicKey}}",
-                        "short_id": "{{server.ShortId}}"
-                    }
-                }
-            """,
-            ProxyProtocol.VlessWs => $$"""
-                "type": "vless",
-                "server": "{{server.Host}}",
-                "server_port": {{server.Port}},
-                "uuid": "{{server.Uuid}}",
-                "tls": {
-                    "enabled": true,
-                    "server_name": "{{server.Sni}}",
-                    "utls": { "enabled": true, "fingerprint": "{{server.Fingerprint}}" }
-                },
-                "transport": {
-                    "type": "ws",
-                    "path": "{{server.Path}}",
-                    "headers": { "Host": "{{server.HostHeader}}" }
-                }
-            """,
-            ProxyProtocol.VmessWs => $$"""
-                "type": "vmess",
-                "server": "{{server.Host}}",
-                "server_port": {{server.Port}},
-                "uuid": "{{server.Uuid}}",
-                "security": "auto",
-                "tls": {
-                    "enabled": true,
-                    "server_name": "{{server.Sni}}",
-                    "utls": { "enabled": true, "fingerprint": "{{server.Fingerprint}}" }
-                },
-                "transport": {
-                    "type": "ws",
-                    "path": "{{server.Path}}",
-                    "headers": { "Host": "{{server.HostHeader}}" }
-                }
-            """,
-            ProxyProtocol.Trojan => $$"""
-                "type": "trojan",
-                "server": "{{server.Host}}",
-                "server_port": {{server.Port}},
-                "password": "{{server.Password}}",
-                "tls": {
-                    "enabled": true,
-                    "server_name": "{{server.Sni}}",
-                    "utls": { "enabled": true, "fingerprint": "{{server.Fingerprint}}" }
-                }
-            """,
-            ProxyProtocol.Hysteria2 => $$"""
-                "type": "hysteria2",
-                "server": "{{server.Host}}",
-                "server_port": {{server.Port}},
-                "password": "{{server.Password}}",
-                "tls": {
-                    "enabled": true,
-                    "server_name": "{{server.Sni}}",
-                    "insecure": true
-                }
-            """,
-            ProxyProtocol.Shadowsocks => $$"""
-                "type": "shadowsocks",
-                "server": "{{server.Host}}",
-                "server_port": {{server.Port}},
-                "method": "aes-256-gcm",
-                "password": "{{server.Password}}"
-            """,
-            _ => ""
-        };
+        var outbound = BuildOutbound(server);
 
-        if (string.IsNullOrEmpty(outbound)) return "{}";
-
-        return $$"""
+        return JsonSerializer.Serialize(new System.Collections.Generic.Dictionary<string, object>
         {
-            "log": { "level": "warn" },
-            "inbounds": [
-                { "type": "socks", "listen": "127.0.0.1", "listen_port": {{socksPort}} },
-                { "type": "http", "listen": "127.0.0.1", "listen_port": {{httpPort}} }
-            ],
-            "outbounds": [
-                {
-                    "tag": "proxy",
-                    {{outbound.Trim()}}
-                },
-                { "type": "direct", "tag": "direct" },
-                { "type": "block", "tag": "block" }
-            ],
-            "route": {
-                "rules": [],
-                "final": "proxy"
+            ["log"] = new System.Collections.Generic.Dictionary<string, object> { ["level"] = "warn" },
+            ["inbounds"] = new[] {
+                new System.Collections.Generic.Dictionary<string, object>
+                { ["type"] = "socks", ["listen"] = "127.0.0.1", ["listen_port"] = socksPort },
+                new System.Collections.Generic.Dictionary<string, object>
+                { ["type"] = "http", ["listen"] = "127.0.0.1", ["listen_port"] = httpPort }
+            },
+            ["outbounds"] = new object[]
+            {
+                outbound,
+                new System.Collections.Generic.Dictionary<string, object> { ["type"] = "direct", ["tag"] = "direct" },
+                new System.Collections.Generic.Dictionary<string, object> { ["type"] = "block", ["tag"] = "block" }
+            },
+            ["route"] = new System.Collections.Generic.Dictionary<string, object>
+            {
+                ["rules"] = Array.Empty<object>(),
+                ["final"] = "proxy"
             }
-        }
-        """;
+        }, _jsonOpts);
     }
 
-    private static int GetFreePort()
+    public static int GetFreePort()
     {
         using var l = new TcpListener(IPAddress.Loopback, 0);
         l.Start();

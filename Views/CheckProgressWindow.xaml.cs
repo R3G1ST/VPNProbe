@@ -31,6 +31,9 @@ public partial class CheckProgressWindow : Window
 
     public async Task RunCheckAsync(string url, bool checkPing, bool checkPortTls, bool checkProxy, bool checkDpi)
     {
+        // Сброс счётчиков при новом запуске
+        ResetCounters();
+
         _cts = new CancellationTokenSource();
         List<ServerInfo> servers = new();
 
@@ -52,16 +55,17 @@ public partial class CheckProgressWindow : Window
         _total = servers.Count;
         TitleText.Text = $"Проверка серверов — {servers.Count} шт.";
         StatusText.Text = $"Проверяю {servers.Count} серверов...";
-        _sw.Start();
+        _sw.Restart();
 
         foreach (var s in servers)
             _rows.Add(new ServerRow { Name = s.DisplayName, StatusIcon = "○" });
 
         var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 10, CancellationToken = _cts.Token };
+        var wasCancelled = false;
 
         await Parallel.ForEachAsync(Enumerable.Range(0, servers.Count), parallelOptions, async (idx, ct) =>
         {
-            if (ct.IsCancellationRequested) return;
+            if (ct.IsCancellationRequested) { wasCancelled = true; return; }
             var server = servers[idx];
             var row = _rows[idx];
 
@@ -134,6 +138,8 @@ public partial class CheckProgressWindow : Window
 
             TryInvoke(() =>
             {
+                if (wasCancelled) return;
+
                 var isOkRow = display.ProxyOk && (!display.PingChecked || display.PingOk);
                 row.StatusIcon = isOkRow ? "✓" : "✗";
                 if (!string.IsNullOrEmpty(display.Error) && string.IsNullOrEmpty(row.Error))
@@ -160,15 +166,36 @@ public partial class CheckProgressWindow : Window
 
         TryInvoke(() =>
         {
+            if (wasCancelled || _cts.IsCancellationRequested)
+            {
+                TitleText.Text = "Проверка отменена";
+                StatusText.Text = "Отменено пользователем";
+                StatusText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#ffcc00"));
+            }
+            else
+            {
+                TitleText.Text = "Проверка завершена";
+                StatusText.Text = $"Завершено — OK: {_ok}, Fail: {_fail}, Всего: {_total}";
+                StatusText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#00ff88"));
+
+                if (_ok > 0)
+                    BtnCreateSub.Visibility = Visibility.Visible;
+            }
+
             BtnStop.Visibility = Visibility.Collapsed;
             BtnDone.Visibility = Visibility.Visible;
-            TitleText.Text = "Проверка завершена";
-            StatusText.Text = $"Завершено — OK: {_ok}, Fail: {_fail}, Всего: {_total}";
-            StatusText.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#00ff88"));
-
-            if (_ok > 0)
-                BtnCreateSub.Visibility = Visibility.Visible;
         });
+    }
+
+    private void ResetCounters()
+    {
+        _done = 0;
+        _ok = 0;
+        _fail = 0;
+        _total = 0;
+        Results.Clear();
+        _rows.Clear();
+        _sw.Reset();
     }
 
     private void TryInvoke(Action action)
